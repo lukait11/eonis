@@ -39,7 +39,7 @@ public class DatabaseContext(
     // Cart → CartItems
     modelBuilder.Entity<CartItem>()
       .HasOne(ci => ci.Cart)
-      .WithMany(c => c.CartItems)
+      .WithMany(c => c.Items)
       .HasForeignKey(ci => ci.CartId)
       .OnDelete(DeleteBehavior.Cascade);
 
