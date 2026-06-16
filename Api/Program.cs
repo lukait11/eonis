@@ -1,14 +1,16 @@
 using System.Text;
 using Api.Context;
+using Api.Data;
 using Api.Models.Entities.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services
-  .AddIdentity<ApplicationUser, IdentityRole>()
+  .AddIdentity<ApplicationUser, IdentityRole<Guid>>()
   .AddEntityFrameworkStores<DatabaseContext>()
   .AddDefaultTokenProviders();
 
@@ -42,17 +44,20 @@ var app = builder.Build();
 
 using(var scope = app.Services.CreateScope())
 {
+  var context = scope.ServiceProvider
+    .GetRequiredService<DatabaseContext>();
+  var userManager = scope.ServiceProvider
+    .GetRequiredService<UserManager<ApplicationUser>>();
   var roleManager = scope.ServiceProvider
-    .GetRequiredService<RoleManager<IdentityRole>>();
+    .GetRequiredService<RoleManager<IdentityRole<Guid>>>();
 
-  string[] roles = ["Buyer", "Seller", "Admin"];
+  // Apply migrations and seed data
+  await context.Database.EnsureCreatedAsync();
 
-  foreach (var role in roles)
+  // Only seed if database is empty
+  if (!await context.Categories.AnyAsync())
   {
-    if (!await roleManager.RoleExistsAsync(role))
-    {
-      await roleManager.CreateAsync(new IdentityRole(role));
-    }
+    await SeedData.InitializeAsync(context, userManager, roleManager);
   }
 }
 

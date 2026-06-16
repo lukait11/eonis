@@ -19,5 +19,6 @@ public class Product
   // Navigation properties
   public SellerProfile? Seller { get; set; }
   public Category? Category { get; set; }
-  public IEnumerable<ProductVariant> Variants { get; set; } = [];
+  public ICollection<ProductVariant> Variants { get; set; } = [];
+  public ICollection<ProductImage> Images { get; set; } = [];
 }
