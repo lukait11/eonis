@@ -1,6 +1,6 @@
 using Api.Models.Entities.Catalog;
 
-namespace Api.Models.Entities.Wishlist;
+namespace Api.Models.Entities.Wishlists;
 
 public class WishlistItem
 {

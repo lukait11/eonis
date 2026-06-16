@@ -1,4 +1,4 @@
-namespace Api.Models.Entities.Payment;
+namespace Api.Models.Entities.Payments;
 
 public enum PaymentStatus
 {

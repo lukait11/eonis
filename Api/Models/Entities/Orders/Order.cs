@@ -7,6 +7,7 @@ public class Order
   public Guid Id { get; set; }
   public Guid UserId { get; set; }
   public Guid AddressId { get; set; }
+  public Guid SellerProfileId { get; set; }
   public OrderStatus Status { get; set; }
   public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
   public double BaseAmount { get; set; }

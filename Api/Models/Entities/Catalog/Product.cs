@@ -1,4 +1,5 @@
 using Api.Models.Entities.Identity;
+using Api.Models.Entities.Reviews;
 
 namespace Api.Models.Entities.Catalog;
 
@@ -21,4 +22,6 @@ public class Product
   public Category? Category { get; set; }
   public ICollection<ProductVariant> Variants { get; set; } = [];
   public ICollection<ProductImage> Images { get; set; } = [];
+  public ICollection<ProductReview> Reviews { get; set; } = [];
+  public ICollection<ProductImage>? PrimaryImage { get; set; }
 }

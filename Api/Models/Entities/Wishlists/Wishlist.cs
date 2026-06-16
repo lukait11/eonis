@@ -1,6 +1,6 @@
 using Api.Models.Entities.Identity;
 
-namespace Api.Models.Entities.Wishlist;
+namespace Api.Models.Entities.Wishlists;
 
 public class Wishlist
 {

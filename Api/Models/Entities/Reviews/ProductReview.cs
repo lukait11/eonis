@@ -1,7 +1,7 @@
 using Api.Models.Entities.Catalog;
 using Api.Models.Entities.Identity;
 
-namespace Api.Models.Entities.Review;
+namespace Api.Models.Entities.Reviews;
 
 public class ProductReview
 {

@@ -8,6 +8,10 @@ public class SellerProfile
   public Guid UserId { get; set; }
   public string? StoreName { get; set; }
   public string? Description { get; set; }
+  public string ? LogoUrl { get; set; }
+  public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+  public DateTime? UpdatedAt { get; set; }
+  public bool IsActive { get; set; } = true;
 
   // Navigation properties
   public ICollection<Product> Products { get; set; } = [];

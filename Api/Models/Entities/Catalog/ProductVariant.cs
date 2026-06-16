@@ -10,4 +10,5 @@ public class ProductVariant
 
   // Navigation properties
   public Product? Product { get; set; }
+  public IEnumerable<ProductImage>? Images { get; set; }
 }

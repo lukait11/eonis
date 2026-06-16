@@ -1,10 +1,10 @@
 using Api.Models.Entities.Catalog;
 using Api.Models.Entities.Identity;
 using Api.Models.Entities.Orders;
-using Api.Models.Entities.Payment;
-using Api.Models.Entities.Review;
+using Api.Models.Entities.Payments;
+using Api.Models.Entities.Reviews;
 using Api.Models.Entities.Shopping;
-using Api.Models.Entities.Wishlist;
+using Api.Models.Entities.Wishlists;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;

@@ -11,6 +11,6 @@ public class Cart
   public DateTime UpdatedAt { get; set; }
 
   // Navigation properties
-  public ICollection<CartItem> CartItems { get; set; } = [];
+  public ICollection<CartItem> Items { get; set; } = [];
   public ApplicationUser? User { get; set; }
 }

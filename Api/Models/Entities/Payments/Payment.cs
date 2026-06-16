@@ -1,6 +1,6 @@
 using Api.Models.Entities.Orders;
 
-namespace Api.Models.Entities.Payment;
+namespace Api.Models.Entities.Payments;
 
 public class Payment
 {
