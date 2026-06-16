@@ -1,3 +1,5 @@
+using Api.Models.Entities.Identity;
+
 namespace Api.Models.Entities.Catalog;
 
 public class Product
@@ -11,6 +13,11 @@ public class Product
   public double Discount { get; set; }
   public string? Material { get; set; }
   public string? Status { get; set; }
-  public DateTime CreatedAt { get; set; }
+  public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
   public DateTime UpdatedAt { get; set; }
+
+  // Navigation properties
+  public SellerProfile? Seller { get; set; }
+  public Category? Category { get; set; }
+  public IEnumerable<ProductVariant> Variants { get; set; } = [];
 }

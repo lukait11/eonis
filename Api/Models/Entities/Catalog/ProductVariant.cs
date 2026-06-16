@@ -7,4 +7,7 @@ public class ProductVariant
   public string? Size { get; set; }
   public string? Color { get; set; }
   public int Quantity { get; set; }
+
+  // Navigation properties
+  public Product? Product { get; set; }
 }
