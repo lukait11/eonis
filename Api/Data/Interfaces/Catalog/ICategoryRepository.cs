@@ -1,6 +1,6 @@
 using Api.Models.Entities.Catalog;
 
-namespace Api.Data.Interfaces;
+namespace Api.Data.Interfaces.Catalog;
 
 public interface ICategoryRepository
 {

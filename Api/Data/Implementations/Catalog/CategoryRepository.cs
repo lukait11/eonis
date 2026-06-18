@@ -1,5 +1,5 @@
 using Api.Context;
-using Api.Data.Interfaces;
+using Api.Data.Interfaces.Catalog;
 using Api.Models.Entities.Catalog;
 using Microsoft.EntityFrameworkCore;
 
