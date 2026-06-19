@@ -23,5 +23,4 @@ public class Product
   public ICollection<ProductVariant> Variants { get; set; } = [];
   public ICollection<ProductImage> Images { get; set; } = [];
   public ICollection<ProductReview> Reviews { get; set; } = [];
-  public ICollection<ProductImage>? PrimaryImage { get; set; }
 }

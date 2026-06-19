@@ -31,11 +31,10 @@ public static class SeedData
     var seller = new ApplicationUser
     {
       Id = Guid.NewGuid(),
-      UserName = "seller@example.com",
+      Role = UserRole.Seller,
       Email = "seller@example.com",
       FirstName = "John",
       LastName = "Smith",
-      EmailConfirmed = true,
       IsActive = true,
       CreatedAt = DateTime.UtcNow
     };
@@ -43,11 +42,10 @@ public static class SeedData
     var customer1 = new ApplicationUser
     {
       Id = Guid.NewGuid(),
-      UserName = "customer1@example.com",
+      Role = UserRole.Customer,
       Email = "customer1@example.com",
       FirstName = "Jane",
       LastName = "Doe",
-      EmailConfirmed = true,
       IsActive = true,
       CreatedAt = DateTime.UtcNow
     };
@@ -55,11 +53,10 @@ public static class SeedData
     var customer2 = new ApplicationUser
     {
       Id = Guid.NewGuid(),
-      UserName = "customer2@example.com",
+      Role = UserRole.Customer,
       Email = "customer2@example.com",
       FirstName = "Bob",
       LastName = "Johnson",
-      EmailConfirmed = true,
       IsActive = true,
       CreatedAt = DateTime.UtcNow
     };

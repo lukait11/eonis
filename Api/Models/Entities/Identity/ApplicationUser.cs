@@ -1,11 +1,15 @@
-using Microsoft.AspNetCore.Identity;
-
 namespace Api.Models.Entities.Identity;
 
-public class ApplicationUser : IdentityUser<Guid>
+public class ApplicationUser
 {
+  public Guid Id { get; set; }
   public string? FirstName { get; set; }
   public string? LastName { get; set; }
+  public string? Email { get; set; }
+  public UserRole Role { get; set; } = UserRole.Customer;
+  public string? RefreshToken { get; set; }
+  public string? PhoneNumber { get; set; }
+  public string? PasswordHash { get; set; }
   public string? ProfilePictureUrl { get; set; }
   public DateTime? DateOfBirth { get; set; }
   public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

@@ -12,10 +12,12 @@ using Microsoft.EntityFrameworkCore;
 namespace Api.Context;
 
 public class DatabaseContext(
-  DbContextOptions<DatabaseContext> options
-) : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>(options)
+  DbContextOptions<DatabaseContext> options,
+  IConfiguration configuration
+) : DbContext(options)
 {
 
+  public DbSet<ApplicationUser> Users { get; set; }
   public DbSet<Category> Categories { get; set; }
   public DbSet<Product> Products { get; set; }
   public DbSet<ProductImage> ProductImages { get; set; }
@@ -31,6 +33,16 @@ public class DatabaseContext(
   public DbSet<SellerReview> SellerReviews { get; set; }
   public DbSet<Wishlist> Wishlists { get; set; }
   public DbSet<WishlistItem> WishlistItems { get; set; }
+
+  protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+  {
+    if (!optionsBuilder.IsConfigured)
+    {
+      var connectionString = configuration.GetConnectionString("Default");
+      optionsBuilder.UseNpgsql(connectionString);
+    }
+  }
+
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
