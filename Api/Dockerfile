@@ -8,10 +8,10 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 COPY Api/Api.csproj Api/
-RUN dotnet restore Api.csproj
+RUN dotnet restore Api/Api.csproj
 
 COPY Api/ Api/
-RUN dotnet publish Api.csproj -c Release -o /app/publish --no-restore
+RUN dotnet publish Api/Api.csproj -c Release -o /app/publish --no-restore
 
 FROM base AS final
 WORKDIR /app
