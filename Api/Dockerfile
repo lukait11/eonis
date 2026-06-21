@@ -7,7 +7,7 @@ EXPOSE 8080
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
-COPY Api.csproj Api/
+COPY Api/Api.csproj Api/
 RUN dotnet restore Api.csproj
 
 COPY Api/ Api/
