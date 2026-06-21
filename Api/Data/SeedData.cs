@@ -13,19 +13,9 @@ namespace Api.Data;
 public static class SeedData
 {
   public static async Task InitializeAsync(
-    DatabaseContext context,
-    UserManager<ApplicationUser> userManager,
-    RoleManager<IdentityRole<Guid>> roleManager)
+    DatabaseContext context
+  )
   {
-    // Create roles
-    var roles = new[] { "Admin", "Seller", "Customer" };
-    foreach (var role in roles)
-    {
-      if (!await roleManager.RoleExistsAsync(role))
-      {
-        await roleManager.CreateAsync(new IdentityRole<Guid> { Name = role });
-      }
-    }
 
     // Create users
     var seller = new ApplicationUser
@@ -61,13 +51,7 @@ public static class SeedData
       CreatedAt = DateTime.UtcNow
     };
 
-    await userManager.CreateAsync(seller, "Password123!");
-    await userManager.CreateAsync(customer1, "Password123!");
-    await userManager.CreateAsync(customer2, "Password123!");
-
-    await userManager.AddToRoleAsync(seller, "Seller");
-    await userManager.AddToRoleAsync(customer1, "Customer");
-    await userManager.AddToRoleAsync(customer2, "Customer");
+    context.Users.AddRange(seller, customer1, customer2);
 
     // Create seller profile
     var sellerProfile = new SellerProfile

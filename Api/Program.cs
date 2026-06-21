@@ -13,9 +13,7 @@ using Api.Data.Interfaces.Orders;
 using Api.Data.Interfaces.Reviews;
 using Api.Data.Interfaces.Shopping;
 using Api.Data.Interfaces.Wishlists;
-using Api.Models.Entities.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
@@ -72,10 +70,6 @@ using(var scope = app.Services.CreateScope())
 {
   var context = scope.ServiceProvider
     .GetRequiredService<DatabaseContext>();
-  var userManager = scope.ServiceProvider
-    .GetRequiredService<UserManager<ApplicationUser>>();
-  var roleManager = scope.ServiceProvider
-    .GetRequiredService<RoleManager<IdentityRole<Guid>>>();
 
   // Apply migrations and seed data
   await context.Database.EnsureCreatedAsync();
@@ -83,11 +77,13 @@ using(var scope = app.Services.CreateScope())
   // Only seed if database is empty
   if (!await context.Categories.AnyAsync())
   {
-    await SeedData.InitializeAsync(context, userManager, roleManager);
+    await SeedData.InitializeAsync(context);
   }
 }
 
 app.UseHttpsRedirection();
 app.MapControllers();
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.Run();

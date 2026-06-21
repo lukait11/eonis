@@ -44,4 +44,8 @@ public class ApplicationUserRepository(DatabaseContext context) : IApplicationUs
     return user;
   }
 
+  public Task<string?> UploadProfilePictureAsync(Guid userId, IFormFile file)
+  {
+    throw new NotImplementedException();
+  }
 }

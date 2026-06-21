@@ -9,4 +9,5 @@ public interface IApplicationUserRepository
   Task<ApplicationUser> CreateUserAsync(ApplicationUser user);
   Task<ApplicationUser?> UpdateUserAsync(ApplicationUser user);
   Task<bool> DeleteUserAsync(Guid userId);
+  Task<string?> UploadProfilePictureAsync(Guid userId, IFormFile file);
 }
