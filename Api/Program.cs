@@ -23,6 +23,17 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddDbContext<DatabaseContext>();
 
+var allowedOrigins = builder.Configuration["Cors:AllowedOrigins"]
+    ?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+    ?? ["http://192.168.0.13:4200"];
+
+builder.Services.AddCors(options =>
+  options.AddPolicy("Frontend", policy =>
+    policy.WithOrigins(allowedOrigins)
+          .AllowAnyHeader()
+          .AllowAnyMethod()
+          .AllowCredentials()));
+
 builder.Services.AddAuthentication(options =>
 {
   options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
