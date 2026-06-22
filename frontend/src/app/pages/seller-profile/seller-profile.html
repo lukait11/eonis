@@ -5,8 +5,8 @@
 } @else {
   <div class="seller-hero">
     <div class="seller-hero-inner">
-      @if (seller()!.logoUrl) {
-        <img class="seller-logo" [src]="seller()!.logoUrl" [alt]="seller()!.storeName" />
+      @if (seller()!.profilePictureUrl) {
+        <img class="seller-logo" [src]="seller()!.profilePictureUrl" [alt]="seller()!.storeName" />
       } @else {
         <div class="seller-logo-placeholder">{{ (seller()!.storeName || 'S')[0] }}</div>
       }

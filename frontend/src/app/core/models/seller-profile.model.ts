@@ -3,7 +3,6 @@ export interface SellerProfile {
   userId: string;
   storeName: string;
   description: string;
-  logoUrl: string;
   profilePictureUrl?: string;
   createdAt: string;
   updatedAt: string;

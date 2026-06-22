@@ -31,7 +31,10 @@ public class CartItemRepository(DatabaseContext context) : ICartItemRepository
 
   public async Task<IEnumerable<CartItem>> GetCartItemsByCartIdAsync(Guid cartId)
   {
-    return await context.CartItems.Where(ci => ci.CartId == cartId).ToListAsync();
+    return await context.CartItems
+      .Include(ci => ci.ProductVariant)
+      .Where(ci => ci.CartId == cartId)
+      .ToListAsync();
   }
 
   public async Task<CartItem?> UpdateCartItemAsync(CartItem cartItem)
