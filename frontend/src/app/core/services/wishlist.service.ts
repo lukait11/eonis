@@ -1,6 +1,6 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap, catchError } from 'rxjs';
+import { Observable, tap, catchError, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Wishlist, WishlistItem } from '../models/wishlist.model';
 
@@ -28,7 +28,7 @@ export class WishlistService {
   }
 
   getItems(wishlistId: string): Observable<WishlistItem[]> {
-    return this.http.get<WishlistItem[]>(`${this.itemApi}/wishlist/${wishlistId}`);
+    return this.http.get<WishlistItem[]>(`${this.itemApi}/wishlist/${wishlistId}`).pipe(map(r => r ?? []));
   }
 
   addItem(wishlistId: string, productId: string): Observable<WishlistItem> {

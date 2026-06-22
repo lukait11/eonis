@@ -1,6 +1,6 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap, of, switchMap, catchError } from 'rxjs';
+import { Observable, tap, of, switchMap, catchError, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Cart, CartItem } from '../models/cart.model';
 
@@ -29,7 +29,7 @@ export class CartService {
   }
 
   getItems(cartId: string): Observable<CartItem[]> {
-    return this.http.get<CartItem[]>(`${this.itemApi}/cart/${cartId}`);
+    return this.http.get<CartItem[]>(`${this.itemApi}/cart/${cartId}`).pipe(map(r => r ?? []));
   }
 
   addItem(cartId: string, productVariantId: string, quantity: number): Observable<CartItem> {

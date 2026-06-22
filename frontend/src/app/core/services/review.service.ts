@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { ProductReview, SellerReview } from '../models/review.model';
 
@@ -12,11 +13,11 @@ export class ReviewService {
   constructor(private http: HttpClient) {}
 
   getProductReviews(productId: string): Observable<ProductReview[]> {
-    return this.http.get<ProductReview[]>(`${this.productApi}/product/${productId}`);
+    return this.http.get<ProductReview[]>(`${this.productApi}/product/${productId}`).pipe(map(r => r ?? []));
   }
 
   getSellerReviews(sellerId: string): Observable<SellerReview[]> {
-    return this.http.get<SellerReview[]>(`${this.sellerApi}/seller/${sellerId}`);
+    return this.http.get<SellerReview[]>(`${this.sellerApi}/seller/${sellerId}`).pipe(map(r => r ?? []));
   }
 
   createProductReview(review: Partial<ProductReview>): Observable<ProductReview> {

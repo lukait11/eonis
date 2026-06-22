@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { Product, ProductVariant } from '../models/product.model';
 
@@ -12,7 +13,7 @@ export class ProductService {
   constructor(private http: HttpClient) {}
 
   getAll(): Observable<Product[]> {
-    return this.http.get<Product[]>(this.api);
+    return this.http.get<Product[]>(this.api).pipe(map(r => r ?? []));
   }
 
   getById(id: string): Observable<Product> {
@@ -20,7 +21,7 @@ export class ProductService {
   }
 
   getByCategory(categoryId: string): Observable<Product[]> {
-    return this.http.get<Product[]>(`${this.api}/category/${categoryId}`);
+    return this.http.get<Product[]>(`${this.api}/category/${categoryId}`).pipe(map(r => r ?? []));
   }
 
   create(product: Partial<Product>): Observable<Product> {
@@ -42,7 +43,7 @@ export class ProductService {
   }
 
   getVariants(productId: string): Observable<ProductVariant[]> {
-    return this.http.get<ProductVariant[]>(`${this.variantApi}/product/${productId}`);
+    return this.http.get<ProductVariant[]>(`${this.variantApi}/product/${productId}`).pipe(map(r => r ?? []));
   }
 
   createVariant(variant: Partial<ProductVariant>): Observable<ProductVariant> {

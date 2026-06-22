@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { Address } from '../models/address.model';
 
@@ -11,7 +12,7 @@ export class AddressService {
   constructor(private http: HttpClient) {}
 
   getByUser(userId: string): Observable<Address[]> {
-    return this.http.get<Address[]>(`${this.api}/user/${userId}`);
+    return this.http.get<Address[]>(`${this.api}/user/${userId}`).pipe(map(r => r ?? []));
   }
 
   create(address: Partial<Address>): Observable<Address> {
