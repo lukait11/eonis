@@ -5,10 +5,10 @@ export interface ApplicationUser {
   email: string;
   firstName: string;
   lastName: string;
-  phoneNumber: string;
-  dateOfBirth: string;
+  phoneNumber: string | null;
+  dateOfBirth: string | null;
   role: UserRole;
-  profilePictureUrl: string;
+  profilePictureUrl: string | null;
   createdAt: string;
   updatedAt: string;
   isActive: boolean;
