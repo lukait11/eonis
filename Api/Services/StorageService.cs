@@ -8,7 +8,7 @@ namespace Api.Services;
 public interface IStorageService
 {
   Task<string> UploadAsync(Stream content, string key, string contentType, CancellationToken ct = default);
-
+  Task<(Stream stream, string contentType)> GetAsync(string key, CancellationToken ct = default);
   Task DeleteAsync(string key, CancellationToken ct = default);
 }
 
@@ -78,7 +78,17 @@ public class GarageStorageService(IConfiguration configuration, ILogger<GarageSt
     resp.EnsureSuccessStatusCode();
 
     logger.LogInformation("Storage upload succeeded — key: {Key}", key);
-    return $"{endpoint.TrimEnd('/')}/{_bucket}/{key}";
+    return key;
+  }
+
+  public async Task<(Stream stream, string contentType)> GetAsync(string key, CancellationToken ct = default)
+  {
+    using var client = CreateClient();
+    var response = await client.GetObjectAsync(_bucket, key, ct);
+    var ms = new MemoryStream();
+    await response.ResponseStream.CopyToAsync(ms, ct);
+    ms.Position = 0;
+    return (ms, response.Headers.ContentType ?? "image/webp");
   }
 
   public async Task DeleteAsync(string key, CancellationToken ct = default)

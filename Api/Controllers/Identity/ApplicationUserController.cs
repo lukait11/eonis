@@ -118,11 +118,12 @@ public class ApplicationUserController(
       var user = await applicationUserRepository.GetUserByIdAsync(userId);
       if (user is null) return Unauthorized();
 
-      string newUrl;
+      string proxyUrl;
       try
       {
         await using var stream = file.OpenReadStream();
-        newUrl = await imageService.ProcessAndUploadAsync(stream, file.ContentType, userId, ct);
+        var key = await imageService.ProcessAndUploadAsync(stream, file.ContentType, userId, ct);
+        proxyUrl = $"{Request.Scheme}://{Request.Host}/api/image/{key}";
       }
       catch (ImageValidationException ex)
       {
@@ -131,7 +132,7 @@ public class ApplicationUserController(
 
       // Delete the old image only after the new one is safely uploaded (versioned key approach)
       var oldUrl = user.ProfilePictureUrl;
-      user.ProfilePictureUrl = newUrl;
+      user.ProfilePictureUrl = proxyUrl;
       await applicationUserRepository.UpdateUserAsync(user);
 
       if (oldUrl is not null)
@@ -141,7 +142,7 @@ public class ApplicationUserController(
           await storageService.DeleteAsync(oldKey, ct);
       }
 
-      return Ok(newUrl);
+      return Ok(proxyUrl);
     }
     catch (Exception ex)
     {
@@ -152,12 +153,18 @@ public class ApplicationUserController(
   /// <summary>Extracts the storage key (path after bucket) from a full Garage URL.</summary>
   private static string? ExtractStorageKey(string url)
   {
-    // URL format: http://endpoint/bucket/key/path...
-    // We need everything after /bucket/
     try
     {
       var uri = new Uri(url);
-      var segments = uri.AbsolutePath.TrimStart('/').Split('/', 2);
+      var path = uri.AbsolutePath;
+
+      // Proxy URL format: /api/image/{key}
+      const string proxyPrefix = "/api/image/";
+      if (path.StartsWith(proxyPrefix))
+        return path[proxyPrefix.Length..];
+
+      // Legacy Garage URL format: /{bucket}/{key}
+      var segments = path.TrimStart('/').Split('/', 2);
       return segments.Length == 2 ? segments[1] : null;
     }
     catch

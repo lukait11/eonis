@@ -157,15 +157,16 @@ public class ProductController(
       if (sellerProfile == null || sellerProfile.UserId != userId)
         return Forbid();
 
-      string newUrl;
+      string proxyUrl;
       try
       {
         await using var stream = file.OpenReadStream();
-        newUrl = await imageService.ProcessAndUploadAsync(stream, file.ContentType, productId, ct);
+        var key = await imageService.ProcessAndUploadAsync(stream, file.ContentType, productId, ct);
+        proxyUrl = $"{Request.Scheme}://{Request.Host}/api/image/{key}";
         ProductImage newImage = new()
         {
           ProductId = productId,
-          ImageUrl = newUrl,
+          ImageUrl = proxyUrl,
           IsPrimary = false
         };
 
@@ -175,7 +176,7 @@ public class ProductController(
       {
         return BadRequest(ex.Message);
       }
-      return Ok(newUrl);
+      return Ok(proxyUrl);
     }
     catch (Exception ex)
     {
