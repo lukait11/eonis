@@ -11,7 +11,6 @@ public class ApplicationUserRepository(DatabaseContext context) : IApplicationUs
   {
     user.CreatedAt = DateTime.UtcNow;
     user.UpdatedAt = DateTime.UtcNow;
-    user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.PasswordHash);
     context.Users.Add(user);
     await context.SaveChangesAsync();
     return user;

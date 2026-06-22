@@ -19,16 +19,16 @@ public class AuthController(
   [HttpPost("register")]
   public async Task<IActionResult> Register([FromBody] RegisterRequest request)
   {
-    var existing = await userRepository.GetUserByEmailAsync(request.Email);
+    var normalizedEmail = request.Email.ToLowerInvariant();
+    var existing = await userRepository.GetUserByEmailAsync(normalizedEmail);
     if (existing is not null)
       return Conflict("Email already registered.");
 
     var hash = BCrypt.Net.BCrypt.HashPassword(request.Password);
-    Console.WriteLine($"[REG] pw_len={request.Password.Length} hash={hash} self_verify={BCrypt.Net.BCrypt.Verify(request.Password, hash)}");
 
     var user = new ApplicationUser
     {
-      Email = request.Email,
+      Email = normalizedEmail,
       PasswordHash = hash,
       FirstName = request.FirstName,
       LastName = request.LastName,
@@ -48,12 +48,9 @@ public class AuthController(
   [HttpPost("login")]
   public async Task<IActionResult> Login([FromBody] LoginRequest request)
   {
-    var user = await userRepository.GetUserByEmailAsync(request.Email);
-    if (user is null)
-      return Unauthorized("User not found.");
-    Console.WriteLine($"[LOGIN] pw_len={request.Password.Length} stored_hash={user.PasswordHash} match={BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash)}");
-    if (!BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
-      return Unauthorized("Password mismatch.");
+    var user = await userRepository.GetUserByEmailAsync(request.Email.ToLowerInvariant());
+    if (user is null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
+      return Unauthorized("Invalid credentials.");
 
     var accessToken = jwtService.GenerateToken(user.Id, user.Email!, user.Role);
     var refreshToken = await refreshTokenService.GenerateRefreshTokenAsync(user.Id);
