@@ -17,7 +17,7 @@ public class ProductVariantController(
     var productVariant = await productVariantRepository.GetProductVariantByIdAsync(productVariantId);
     if (productVariant == null)
     {
-      return NotFound();
+      return NoContent();
     }
     return Ok(productVariant);
   }
@@ -28,7 +28,7 @@ public class ProductVariantController(
     var productVariants = await productVariantRepository.GetProductVariantsByProductIdAsync(productId);
     if (productVariants == null || !productVariants.Any())
     {
-      return NotFound();
+      return NoContent();
     }
     return Ok(productVariants);
   }

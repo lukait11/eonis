@@ -20,7 +20,7 @@ public class OrderController(
     var orders = await orderRepository.GetOrdersAsync();
     if (orders == null || !orders.Any())
     {
-      return NotFound();
+      return NoContent();
     }
     return Ok(orders);
   }
@@ -31,7 +31,7 @@ public class OrderController(
     var order = await orderRepository.GetOrderByIdAsync(orderId);
     if (order == null)
     {
-      return NotFound();
+      return NoContent();
     }
     return Ok(order);
   }
@@ -42,7 +42,7 @@ public class OrderController(
     var orders = await orderRepository.GetOrdersByUserIdAsync(userId);
     if (orders == null || !orders.Any())
     {
-      return NotFound();
+      return NoContent();
     }
     return Ok(orders);
   }
@@ -53,7 +53,7 @@ public class OrderController(
     var orders = await orderRepository.GetOrdersBySellerIdAsync(sellerId);
     if (orders == null || !orders.Any())
     {
-      return NotFound();
+      return NoContent();
     }
     return Ok(orders);
   }
@@ -64,7 +64,7 @@ public class OrderController(
     var orders = await orderRepository.GetOrdersByStatusAsync(status);
     if (orders == null || !orders.Any())
     {
-      return NotFound();
+      return NoContent();
     }
     return Ok(orders);
   }

@@ -19,7 +19,7 @@ public class WishlistItemController(
     var wishlistItem = await wishlistItemRepository.GetWishlistItemByIdAsync(wishlistItemId);
     if (wishlistItem == null)
     {
-      return NotFound();
+      return NoContent();
     }
     return Ok(wishlistItem);
   }
@@ -30,7 +30,7 @@ public class WishlistItemController(
     var wishlistItems = await wishlistItemRepository.GetWishlistItemsByWishlistIdAsync(wishlistId);
     if (!wishlistItems.Any())
     {
-      return NotFound();
+      return NoContent();
     }
     return Ok(wishlistItems);
   }

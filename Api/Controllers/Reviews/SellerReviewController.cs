@@ -19,7 +19,7 @@ public class SellerReviewController(
     var reviews = await sellerReviewRepository.GetSellerReviewsByUserIdAsync(userId);
     if (reviews == null || !reviews.Any())
     {
-      return NotFound();
+      return NoContent();
     }
     return Ok(reviews);
   }
@@ -30,7 +30,7 @@ public class SellerReviewController(
     var reviews = await sellerReviewRepository.GetSellerReviewsBySellerIdAsync(sellerId);
     if (reviews == null || !reviews.Any())
     {
-      return NotFound();
+      return NoContent();
     }
     return Ok(reviews);
   }
@@ -41,7 +41,7 @@ public class SellerReviewController(
     var review = await sellerReviewRepository.GetSellerReviewByIdAsync(reviewId);
     if (review == null)
     {
-      return NotFound();
+      return NoContent();
     }
     return Ok(review);
   }

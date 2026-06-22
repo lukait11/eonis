@@ -17,7 +17,7 @@ public class AddressController(
     var addresses = await addressRepository.GetAddressesByUserIdAsync(userId);
     if (addresses == null || !addresses.Any())
     {
-      return NotFound();
+      return NoContent();
     }
     return Ok(addresses);
   }
@@ -28,7 +28,7 @@ public class AddressController(
     var address = await addressRepository.GetAddressByIdAsync(addressId);
     if (address == null)
     {
-      return NotFound();
+      return NoContent();
     }
     return Ok(address);
   }

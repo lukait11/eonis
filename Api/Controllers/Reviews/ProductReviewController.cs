@@ -20,7 +20,7 @@ public class ProductReviewController(
     var reviews = await productReviewRepository.GetProductReviewsByUserIdAsync(userId);
     if (reviews == null || !reviews.Any())
     {
-      return NotFound();
+      return NoContent();
     }
     return Ok(reviews);
   }
@@ -31,7 +31,7 @@ public class ProductReviewController(
     var reviews = await productReviewRepository.GetProductReviewsByProductIdAsync(productId);
     if (reviews == null || !reviews.Any())
     {
-      return NotFound();
+      return NoContent();
     }
     return Ok(reviews);
   }

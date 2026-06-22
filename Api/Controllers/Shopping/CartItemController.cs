@@ -19,7 +19,7 @@ public class CartItemController(
     var cartItem = await cartItemRepository.GetCartItemByIdAsync(cartItemId);
     if (cartItem == null)
     {
-      return NotFound();
+      return NoContent();
     }
     return Ok(cartItem);
   }
@@ -30,7 +30,7 @@ public class CartItemController(
     var cartItems = await cartItemRepository.GetCartItemsByCartIdAsync(cartId);
     if (cartItems == null || !cartItems.Any())
     {
-      return NotFound();
+      return NoContent();
     }
     return Ok(cartItems);
   }

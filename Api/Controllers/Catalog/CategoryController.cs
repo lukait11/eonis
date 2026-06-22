@@ -12,6 +12,10 @@ public class CategoryController(ICategoryRepository categoryRepository) : Contro
   public async Task<IActionResult> GetAll()
   {
     var categories = await categoryRepository.GetCategoriesAsync();
+    if (categories == null || !categories.Any())
+    {
+      return NoContent();
+    }
     return Ok(categories);
   }
 
@@ -21,7 +25,7 @@ public class CategoryController(ICategoryRepository categoryRepository) : Contro
     var category = await categoryRepository.GetCategoryByIdAsync(categoryId);
     if (category == null)
     {
-      return NotFound();
+      return NoContent();
     }
     return Ok(category);
   }

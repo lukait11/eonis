@@ -19,7 +19,7 @@ public class OrderItemController(
     var orderItem = await orderItemRepository.GetOrderItemByIdAsync(orderItemId);
     if (orderItem == null)
     {
-      return NotFound();
+      return NoContent();
     }
     return Ok(orderItem);
   }
@@ -30,7 +30,7 @@ public class OrderItemController(
     var orderItems = await orderItemRepository.GetOrderItemsByOrderIdAsync(orderId);
     if (orderItems == null || !orderItems.Any())
     {
-      return NotFound();
+      return NoContent();
     }
     return Ok(orderItems);
   }

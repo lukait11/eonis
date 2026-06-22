@@ -20,7 +20,7 @@ public class ApplicationUserController(
     var users = await applicationUserRepository.GetUsersAsync();
     if (users == null || !users.Any())
     {
-      return NotFound();
+      return NoContent();
     }
     return Ok(users);
   }
@@ -31,7 +31,7 @@ public class ApplicationUserController(
     var user = await applicationUserRepository.GetUserByIdAsync(userId);
     if (user == null)
     {
-      return NotFound();
+      return NoContent();
     }
     return Ok(user);
   }
@@ -47,15 +47,19 @@ public class ApplicationUserController(
   public async Task<IActionResult> Update(ApplicationUser user)
   {
     if (user.Id == Guid.Empty)
-    {
       return BadRequest();
-    }
-    var updatedUser = await applicationUserRepository.UpdateUserAsync(user);
-    if (updatedUser == null)
-    {
+
+    var existing = await applicationUserRepository.GetUserByIdAsync(user.Id);
+    if (existing == null)
       return NotFound();
-    }
-    return Ok(updatedUser);
+
+    existing.FirstName = user.FirstName;
+    existing.LastName = user.LastName;
+    existing.PhoneNumber = user.PhoneNumber;
+    existing.DateOfBirth = user.DateOfBirth;
+
+    var updated = await applicationUserRepository.UpdateUserAsync(existing);
+    return Ok(updated);
   }
 
   [HttpDelete("{userId:guid}")]

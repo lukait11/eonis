@@ -19,7 +19,7 @@ public class CartController(
     var cart = await cartRepository.GetCartByIdAsync(cartId);
     if (cart == null)
     {
-      return NotFound();
+      return NoContent();
     }
     return Ok(cart);
   }
@@ -30,7 +30,7 @@ public class CartController(
     var cart = await cartRepository.GetCartByUserIdAsync(userId);
     if (cart == null)
     {
-      return NotFound();
+      return NoContent();
     }
     return Ok(cart);
   }

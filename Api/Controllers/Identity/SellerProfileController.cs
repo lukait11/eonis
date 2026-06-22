@@ -17,7 +17,7 @@ public class SellerProfileController(
     var sellerProfiles = await sellerProfileRepository.GetSellerProfilesAsync();
     if (sellerProfiles == null || !sellerProfiles.Any())
     {
-      return NotFound();
+      return NoContent();
     }
     return Ok(sellerProfiles);
   }
@@ -28,7 +28,7 @@ public class SellerProfileController(
     var sellerProfile = await sellerProfileRepository.GetSellerProfileByIdAsync(sellerProfileId);
     if (sellerProfile == null)
     {
-      return NotFound();
+      return NoContent();
     }
     return Ok(sellerProfile);
   }

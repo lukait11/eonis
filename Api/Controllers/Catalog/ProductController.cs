@@ -22,6 +22,10 @@ public class ProductController(
   public async Task<IActionResult> GetAll()
   {
     var products = await productRepository.GetProductsAsync();
+    if (products == null || !products.Any())
+    {
+      return NoContent();
+    }
     return Ok(products);
   }
 
@@ -31,7 +35,7 @@ public class ProductController(
     var product = await productRepository.GetProductByIdAsync(productId);
     if (product == null)
     {
-      return NotFound();
+      return NoContent();
     }
     return Ok(product);
   }
@@ -42,7 +46,7 @@ public class ProductController(
     var products = await productRepository.GetProductsByCategoryIdAsync(categoryId);
     if (products == null || !products.Any())
     {
-      return NotFound();
+      return NoContent();
     }
     return Ok(products);
   }
