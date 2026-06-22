@@ -13,6 +13,7 @@ using Api.Data.Interfaces.Orders;
 using Api.Data.Interfaces.Reviews;
 using Api.Data.Interfaces.Shopping;
 using Api.Data.Interfaces.Wishlists;
+using Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -48,6 +49,7 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IProductImageRepository, ProductImageRepository>();
 builder.Services.AddScoped<IProductVariantRepository, ProductVariantRepository>();
 builder.Services.AddScoped<IApplicationUserRepository, ApplicationUserRepository>();
 builder.Services.AddScoped<ISellerProfileRepository, SellerProfileRepository>();
@@ -60,6 +62,11 @@ builder.Services.AddScoped<ICartRepository, CartRepository>();
 builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
 builder.Services.AddScoped<IWishlistRepository, WishlistRepository>();
 builder.Services.AddScoped<IWishlistItemRepository, WishlistItemRepository>();
+
+builder.Services.AddScoped<JwtService>();
+builder.Services.AddScoped<RefreshTokenService>();
+builder.Services.AddScoped<ImageService>();
+builder.Services.AddScoped<IStorageService, GarageStorageService>();
 
 
 builder.Services.AddAuthorization();

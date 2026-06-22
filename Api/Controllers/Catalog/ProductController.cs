@@ -10,9 +10,9 @@ namespace Api.Controllers.Catalog;
 [Route("api/[controller]")]
 public class ProductController(
   IProductRepository productRepository,
+  IProductImageRepository productImageRepository,
   ICategoryRepository categoryRepository,
   IApplicationUserRepository applicationUserRepository,
-  IStorageService storageService,
   ImageService imageService
 ) : ControllerBase
 {
@@ -103,6 +103,11 @@ public class ProductController(
     if (file is null || file.Length == 0)
       return BadRequest("No file provided.");
 
+    if (await productRepository.GetProductByIdAsync(productId) == null)
+    {
+      return BadRequest("Product does not exist.");
+    }
+
     var userId = Guid.Parse(User.FindFirst("sub")!.Value);
     var user = await applicationUserRepository.GetUserByIdAsync(userId);
     if (user is null) return Unauthorized();
@@ -112,40 +117,19 @@ public class ProductController(
     {
       await using var stream = file.OpenReadStream();
       newUrl = await imageService.ProcessAndUploadAsync(stream, file.ContentType, productId, ct);
+      ProductImage newImage = new()
+      {
+        ProductId = productId,
+        ImageUrl = newUrl,
+        IsPrimary = false
+      };
+
+      await productImageRepository.CreateProductImageAsync(newImage);
     }
     catch (ImageValidationException ex)
     {
       return BadRequest(ex.Message);
     }
-
-    var oldUrl = user.ProfilePictureUrl;
-    user.ProfilePictureUrl = newUrl;
-    await applicationUserRepository.UpdateUserAsync(user);
-
-    if (oldUrl is not null)
-    {
-      var oldKey = ExtractStorageKey(oldUrl);
-      if (oldKey is not null)
-        await storageService.DeleteAsync(oldKey, ct);
-    }
-
     return Ok(newUrl);
-  }
-
-  /// <summary>Extracts the storage key (path after bucket) from a full Garage URL.</summary>
-  private static string? ExtractStorageKey(string url)
-  {
-    // URL format: http://endpoint/bucket/key/path...
-    // We need everything after /bucket/
-    try
-    {
-      var uri = new Uri(url);
-      var segments = uri.AbsolutePath.TrimStart('/').Split('/', 2);
-      return segments.Length == 2 ? segments[1] : null;
-    }
-    catch
-    {
-      return null;
-    }
   }
 }
