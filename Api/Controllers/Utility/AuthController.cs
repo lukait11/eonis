@@ -23,10 +23,13 @@ public class AuthController(
     if (existing is not null)
       return Conflict("Email already registered.");
 
+    var hash = BCrypt.Net.BCrypt.HashPassword(request.Password);
+    Console.WriteLine($"[REG] pw_len={request.Password.Length} hash={hash} self_verify={BCrypt.Net.BCrypt.Verify(request.Password, hash)}");
+
     var user = new ApplicationUser
     {
       Email = request.Email,
-      PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
+      PasswordHash = hash,
       FirstName = request.FirstName,
       LastName = request.LastName,
       Role = request.Role
@@ -46,10 +49,11 @@ public class AuthController(
   public async Task<IActionResult> Login([FromBody] LoginRequest request)
   {
     var user = await userRepository.GetUserByEmailAsync(request.Email);
-    if (user is null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
-    {
-      return Unauthorized("Invalid credentials.");
-    }
+    if (user is null)
+      return Unauthorized("User not found.");
+    Console.WriteLine($"[LOGIN] pw_len={request.Password.Length} stored_hash={user.PasswordHash} match={BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash)}");
+    if (!BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
+      return Unauthorized("Password mismatch.");
 
     var accessToken = jwtService.GenerateToken(user.Id, user.Email!, user.Role);
     var refreshToken = await refreshTokenService.GenerateRefreshTokenAsync(user.Id);
@@ -58,15 +62,6 @@ public class AuthController(
     return Ok(accessToken);
   }
 
-  /// <summary>Issue a new access token using a valid refresh token.</summary>
-  /// <remarks>
-  /// Reads the refresh token from the HttpOnly cookie set on login.
-  /// On success the old refresh token is deleted and a new one is issued (rotation).
-  /// Returns a new short-lived JWT access token in the response body.
-  /// CSRF validation is skipped — this endpoint only reads a cookie, not a body.
-  /// </remarks>
-  /// <response code="200">Token refreshed. Returns a new JWT access token.</response>
-  /// <response code="401">Refresh token is missing, invalid, or expired.</response>
   [AllowAnonymous]
   [HttpPost("refresh")]
   public async Task<IActionResult> Refresh()
@@ -88,12 +83,6 @@ public class AuthController(
     return Ok(accessToken);
   }
 
-  /// <summary>Log out by revoking the current refresh token.</summary>
-  /// <remarks>
-  /// Deletes the refresh token from Redis and clears the HttpOnly cookie.
-  /// If no refresh token cookie is present the request is silently ignored.
-  /// </remarks>
-  /// <response code="204">Logged out successfully.</response>
   [AllowAnonymous]
   [HttpPost("logout")]
   [ProducesResponseType(StatusCodes.Status204NoContent)]
