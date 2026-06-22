@@ -22,10 +22,12 @@ services:
     build:
       context: .
       dockerfile: Api/Dockerfile
-    ports: 
+    ports:
       - 8081:8080
     env_file:
       - /opt/eonis/Api.env
+    extra_hosts:
+      - "server1:host-gateway"
     networks:
       - eonis
     depends_on:
