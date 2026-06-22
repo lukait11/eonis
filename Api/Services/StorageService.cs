@@ -12,7 +12,7 @@ public interface IStorageService
   Task DeleteAsync(string key, CancellationToken ct = default);
 }
 
-public class GarageStorageService(IConfiguration configuration) : IStorageService
+public class GarageStorageService(IConfiguration configuration, ILogger<GarageStorageService> logger) : IStorageService
 {
   private readonly string _bucket = configuration["Storage:Bucket"]
       ?? throw new InvalidOperationException("Storage:Bucket is not configured.");
@@ -39,6 +39,9 @@ public class GarageStorageService(IConfiguration configuration) : IStorageServic
 
   public async Task<string> UploadAsync(Stream content, string key, string contentType, CancellationToken ct = default)
   {
+    logger.LogInformation("Storage upload starting — bucket: {Bucket}, key: {Key}, endpoint: {Endpoint}",
+        _bucket, key, configuration["Storage:Endpoint"]);
+
     using var client = CreateClient();
 
     var endpoint = configuration["Storage:Endpoint"]!;
@@ -62,9 +65,19 @@ public class GarageStorageService(IConfiguration configuration) : IStorageServic
     };
     req.Content.Headers.ContentType = new MediaTypeHeaderValue(contentType);
 
+    logger.LogInformation("Uploading to presigned URL: {Url}", presigned);
+
     var resp = await http.SendAsync(req, ct);
+
+    if (!resp.IsSuccessStatusCode)
+    {
+      var body = await resp.Content.ReadAsStringAsync(ct);
+      logger.LogError("Garage upload failed — status {Status}, body: {Body}", (int)resp.StatusCode, body);
+    }
+
     resp.EnsureSuccessStatusCode();
 
+    logger.LogInformation("Storage upload succeeded — key: {Key}", key);
     return $"{endpoint.TrimEnd('/')}/{_bucket}/{key}";
   }
 
@@ -78,6 +91,11 @@ public class GarageStorageService(IConfiguration configuration) : IStorageServic
     catch (AmazonS3Exception ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
     {
       // Object already gone — not an error
+    }
+    catch (Exception ex)
+    {
+      logger.LogError(ex, "Garage delete failed for key {Key}", key);
+      throw;
     }
   }
 }
