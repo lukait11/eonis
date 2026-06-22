@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 using Api.Models.Entities.Catalog;
 
@@ -19,4 +20,7 @@ public class SellerProfile
   
   [JsonIgnore]
   public ApplicationUser? User { get; set; }
+
+  [NotMapped]
+  public string? ProfilePictureUrl => User?.ProfilePictureUrl;
 }

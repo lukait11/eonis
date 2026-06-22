@@ -32,6 +32,8 @@ public class ProductRepository(DatabaseContext context) : IProductRepository
       .Include(p => p.Images)
       .Include(p => p.Variants)
       .Include(p => p.Reviews)
+      .Include(p => p.Category)
+      .Include(p => p.Seller).ThenInclude(s => s!.User)
       .FirstOrDefaultAsync(p => p.Id == productId);
   }
 
@@ -54,9 +56,19 @@ public class ProductRepository(DatabaseContext context) : IProductRepository
 
   public async Task<Product?> UpdateProductAsync(Product product)
   {
-    product.UpdatedAt = DateTime.UtcNow;
-    context.Products.Update(product);
+    var existing = await context.Products.FindAsync(product.Id);
+    if (existing == null) return null;
+
+    existing.Name = product.Name;
+    existing.Description = product.Description;
+    existing.BasePrice = product.BasePrice;
+    existing.Discount = product.Discount;
+    existing.Material = product.Material;
+    existing.Status = product.Status;
+    existing.CategoryId = product.CategoryId;
+    existing.UpdatedAt = DateTime.UtcNow;
+
     await context.SaveChangesAsync();
-    return product;
+    return existing;
   }
 }

@@ -101,7 +101,7 @@ export class MyStore implements OnInit {
       const updated: Product = { ...editing, ...val as any };
       this.productService.update(updated).subscribe({
         next: p => {
-          this.products.update(list => list.map(x => x.id === p.id ? { ...p, variants: x.variants } : x));
+          this.products.update(list => list.map(x => x.id === p.id ? { ...p, variants: x.variants, images: x.images } : x));
           this.cancelForm();
           this.saving.set(false);
         },

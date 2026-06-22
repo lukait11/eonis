@@ -96,8 +96,8 @@
 
       @if (product()!.seller) {
         <a [routerLink]="['/seller', product()!.sellerId]" class="seller-card">
-          @if (product()!.seller!.logoUrl) {
-            <img class="seller-logo" [src]="product()!.seller!.logoUrl" alt="Seller" />
+          @if (product()!.seller!.logoUrl || product()!.seller!.profilePictureUrl) {
+            <img class="seller-logo" [src]="(product()!.seller!.logoUrl || product()!.seller!.profilePictureUrl)!" alt="Seller" />
           } @else {
             <div class="seller-avatar-placeholder">{{ (product()!.seller!.storeName || 'S')[0] }}</div>
           }

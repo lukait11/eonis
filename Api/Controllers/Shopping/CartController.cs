@@ -35,7 +35,7 @@ public class CartController(
     {
       var cart = await cartRepository.GetCartByUserIdAsync(userId);
       if (cart == null)
-        return NoContent();
+        return NotFound();
       return Ok(cart);
     }
     catch (Exception ex)

@@ -28,12 +28,16 @@ public class SellerProfileRepository(DatabaseContext context) : ISellerProfileRe
 
   public async Task<SellerProfile?> GetSellerProfileByIdAsync(Guid sellerProfileId)
   {
-    return await context.SellerProfiles.FirstOrDefaultAsync(sp => sp.Id == sellerProfileId);
+    return await context.SellerProfiles
+      .Include(sp => sp.User)
+      .FirstOrDefaultAsync(sp => sp.Id == sellerProfileId);
   }
 
   public async Task<IEnumerable<SellerProfile>> GetSellerProfilesAsync()
   {
-    return await context.SellerProfiles.ToListAsync();
+    return await context.SellerProfiles
+      .Include(sp => sp.User)
+      .ToListAsync();
   }
 
   public async Task<SellerProfile?> UpdateSellerProfileAsync(SellerProfile sellerProfile)

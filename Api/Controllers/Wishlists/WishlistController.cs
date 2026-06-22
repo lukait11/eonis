@@ -35,7 +35,7 @@ public class WishlistController(
     {
       var wishlist = await wishlistRepository.GetWishlistByUserIdAsync(userId);
       if (wishlist == null)
-        return NoContent();
+        return NotFound();
       return Ok(wishlist);
     }
     catch (Exception ex)
