@@ -146,13 +146,13 @@ public class ProductController(
       if (user is null) return Unauthorized();
 
       if (user.Role != UserRole.Seller || user.Role != UserRole.Admin)
-        return Forbid(user.Role.ToString());
+        return Forbid();
 
       var product = await productRepository.GetProductByIdAsync(productId);
       if (product == null)
         return NotFound();
       if (product.SellerId != userId)
-        return Forbid([product.SellerId.ToString(), userId.ToString()]);
+        return Forbid();
 
       string newUrl;
       try
