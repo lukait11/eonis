@@ -28,7 +28,7 @@ export class AuthService {
 
   login(req: LoginRequest): Observable<string> {
     return this.http
-      .post<string>(`${this.api}/login`, req, { withCredentials: true })
+      .post(`${this.api}/login`, req, { withCredentials: true, responseType: 'text' })
       .pipe(tap(token => this.store(token)));
   }
 
@@ -38,7 +38,7 @@ export class AuthService {
 
   refresh(): Observable<string> {
     return this.http
-      .post<string>(`${this.api}/refresh`, {}, { withCredentials: true })
+      .post(`${this.api}/refresh`, {}, { withCredentials: true, responseType: 'text' })
       .pipe(tap(token => this.store(token)));
   }
 
