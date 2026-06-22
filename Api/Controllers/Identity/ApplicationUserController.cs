@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Api.Data.Interfaces.Identity;
 using Api.Models.Entities.Identity;
 using Api.Services;
@@ -113,7 +114,7 @@ public class ApplicationUserController(
       if (file is null || file.Length == 0)
         return BadRequest("No file provided.");
 
-      var userId = Guid.Parse(User.FindFirst("sub")!.Value);
+      var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
       var user = await applicationUserRepository.GetUserByIdAsync(userId);
       if (user is null) return Unauthorized();
 

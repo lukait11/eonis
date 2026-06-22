@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Api.Data.Interfaces.Catalog;
 using Api.Data.Interfaces.Identity;
 using Api.Models.Entities.Catalog;
@@ -140,7 +141,7 @@ public class ProductController(
       if (await productRepository.GetProductByIdAsync(productId) == null)
         return BadRequest("Product does not exist.");
 
-      var userId = Guid.Parse(User.FindFirst("sub")!.Value);
+      var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
       var user = await applicationUserRepository.GetUserByIdAsync(userId);
       if (user is null) return Unauthorized();
 
