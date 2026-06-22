@@ -15,59 +15,82 @@ public class WishlistController(
   [HttpGet("{wishlistId:guid}")]
   public async Task<IActionResult> GetWishlist(Guid wishlistId)
   {
-    var wishlist = await wishlistRepository.GetWishlistByIdAsync(wishlistId);
-    if (wishlist == null)
+    try
     {
-      return NoContent();
+      var wishlist = await wishlistRepository.GetWishlistByIdAsync(wishlistId);
+      if (wishlist == null)
+        return NoContent();
+      return Ok(wishlist);
     }
-    return Ok(wishlist);
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 
   [HttpGet("user/{userId:guid}")]
   public async Task<IActionResult> GetUserWishlist(Guid userId)
   {
-    var wishlist = await wishlistRepository.GetWishlistByUserIdAsync(userId);
-    if (wishlist == null)
+    try
     {
-      return NoContent();
+      var wishlist = await wishlistRepository.GetWishlistByUserIdAsync(userId);
+      if (wishlist == null)
+        return NoContent();
+      return Ok(wishlist);
     }
-    return Ok(wishlist);
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 
   [HttpPost]
   public async Task<IActionResult> CreateWishlist(Wishlist wishlist)
   {
-    if (await userRepository.GetUserByIdAsync(wishlist.UserId) == null)
+    try
     {
-      return BadRequest("User not found.");
+      if (await userRepository.GetUserByIdAsync(wishlist.UserId) == null)
+        return BadRequest("User not found.");
+      var createdWishlist = await wishlistRepository.CreateWishlistAsync(wishlist);
+      return CreatedAtAction(nameof(GetWishlist), new { wishlistId = createdWishlist.Id }, createdWishlist);
     }
-    var createdWishlist = await wishlistRepository.CreateWishlistAsync(wishlist);
-    return CreatedAtAction(nameof(GetWishlist), new { wishlistId = createdWishlist.Id }, createdWishlist);
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 
   [HttpPut]
   public async Task<IActionResult> UpdateWishlist(Wishlist wishlist)
   {
-    if (await userRepository.GetUserByIdAsync(wishlist.UserId) == null)
+    try
     {
-      return BadRequest("User not found.");
+      if (await userRepository.GetUserByIdAsync(wishlist.UserId) == null)
+        return BadRequest("User not found.");
+      var updatedWishlist = await wishlistRepository.UpdateWishlistAsync(wishlist);
+      if (updatedWishlist == null)
+        return NotFound();
+      return Ok(updatedWishlist);
     }
-    var updatedWishlist = await wishlistRepository.UpdateWishlistAsync(wishlist);
-    if (updatedWishlist == null)
+    catch (Exception ex)
     {
-      return NotFound();
+      return StatusCode(500, ex.Message);
     }
-    return Ok(updatedWishlist);
   }
 
   [HttpDelete("{wishlistId:guid}")]
   public async Task<IActionResult> DeleteWishlist(Guid wishlistId)
   {
-    var deleted = await wishlistRepository.DeleteWishlistAsync(wishlistId);
-    if (!deleted)
+    try
     {
-      return NotFound();
+      var deleted = await wishlistRepository.DeleteWishlistAsync(wishlistId);
+      if (!deleted)
+        return NotFound();
+      return Ok();
     }
-    return Ok();
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 }

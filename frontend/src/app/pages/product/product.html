@@ -79,7 +79,7 @@
       <div class="product-actions">
         @if (auth.isLoggedIn()) {
           <button class="btn-cart" [disabled]="!canAddToCart || addingToCart() || !selectedVariant() || selectedVariant()!.quantity === 0" (click)="addToCart()">
-            {{ addingToCart() ? 'Adding…' : canAddToCart ? 'Add to cart' : product()!.status === 'OutOfStock' ? 'Out of stock' : 'Discontinued' }}
+            {{ addingToCart() ? 'Adding…' : !hasVariants ? 'No variants available' : canAddToCart ? 'Add to cart' : product()!.status === 'OutOfStock' ? 'Out of stock' : 'Discontinued' }}
           </button>
           <button class="btn-wishlist" [class.wishlisted]="isWishlisted" (click)="toggleWishlist()" aria-label="Wishlist">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

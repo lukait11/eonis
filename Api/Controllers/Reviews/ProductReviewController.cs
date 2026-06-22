@@ -17,59 +17,82 @@ public class ProductReviewController(
   [HttpGet("user/{userId:guid}")]
   public async Task<IActionResult> GetByUserId(Guid userId)
   {
-    var reviews = await productReviewRepository.GetProductReviewsByUserIdAsync(userId);
-    if (reviews == null || !reviews.Any())
+    try
     {
-      return NoContent();
+      var reviews = await productReviewRepository.GetProductReviewsByUserIdAsync(userId);
+      if (reviews == null || !reviews.Any())
+        return NoContent();
+      return Ok(reviews);
     }
-    return Ok(reviews);
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 
   [HttpGet("product/{productId:guid}")]
   public async Task<IActionResult> GetByProductId(Guid productId)
   {
-    var reviews = await productReviewRepository.GetProductReviewsByProductIdAsync(productId);
-    if (reviews == null || !reviews.Any())
+    try
     {
-      return NoContent();
+      var reviews = await productReviewRepository.GetProductReviewsByProductIdAsync(productId);
+      if (reviews == null || !reviews.Any())
+        return NoContent();
+      return Ok(reviews);
     }
-    return Ok(reviews);
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 
   [HttpGet("{reviewId:guid}")]
   public async Task<IActionResult> GetById(Guid reviewId)
   {
-    var review = await productReviewRepository.GetProductReviewByIdAsync(reviewId);
-    if (review == null)
+    try
     {
-      return NotFound();
+      var review = await productReviewRepository.GetProductReviewByIdAsync(reviewId);
+      if (review == null)
+        return NotFound();
+      return Ok(review);
     }
-    return Ok(review);
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 
   [HttpPost]
   public async Task<IActionResult> Create(ProductReview productReview)
   {
-    if (await productRepository.GetProductByIdAsync(productReview.ProductId) == null)
+    try
     {
-      return NotFound($"Product with ID {productReview.ProductId} not found.");
+      if (await productRepository.GetProductByIdAsync(productReview.ProductId) == null)
+        return NotFound($"Product with ID {productReview.ProductId} not found.");
+      if (await applicationUserRepository.GetUserByIdAsync(productReview.UserId) == null)
+        return NotFound($"User with ID {productReview.UserId} not found.");
+      var createdReview = await productReviewRepository.CreateProductReviewAsync(productReview);
+      return CreatedAtAction(nameof(GetById), new { reviewId = createdReview.Id }, createdReview);
     }
-    if (await applicationUserRepository.GetUserByIdAsync(productReview.UserId) == null)
+    catch (Exception ex)
     {
-      return NotFound($"User with ID {productReview.UserId} not found.");
+      return StatusCode(500, ex.Message);
     }
-    var createdReview = await productReviewRepository.CreateProductReviewAsync(productReview);
-    return CreatedAtAction(nameof(GetById), new { reviewId = createdReview.Id }, createdReview);
   }
 
   [HttpDelete("{reviewId:guid}")]
   public async Task<IActionResult> Delete(Guid reviewId)
   {
-    var deleted = await productReviewRepository.DeleteProductReviewAsync(reviewId);
-    if (!deleted)
+    try
     {
-      return NotFound();
+      var deleted = await productReviewRepository.DeleteProductReviewAsync(reviewId);
+      if (!deleted)
+        return NotFound();
+      return Ok();
     }
-    return Ok();
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 }

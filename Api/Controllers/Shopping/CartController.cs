@@ -12,63 +12,85 @@ public class CartController(
   IApplicationUserRepository userRepository
 ) : ControllerBase
 {
-
   [HttpGet("{cartId:guid}")]
   public async Task<IActionResult> GetById(Guid cartId)
   {
-    var cart = await cartRepository.GetCartByIdAsync(cartId);
-    if (cart == null)
+    try
     {
-      return NoContent();
+      var cart = await cartRepository.GetCartByIdAsync(cartId);
+      if (cart == null)
+        return NoContent();
+      return Ok(cart);
     }
-    return Ok(cart);
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 
   [HttpGet("user/{userId:guid}")]
   public async Task<IActionResult> GetByUserId(Guid userId)
   {
-    var cart = await cartRepository.GetCartByUserIdAsync(userId);
-    if (cart == null)
+    try
     {
-      return NoContent();
+      var cart = await cartRepository.GetCartByUserIdAsync(userId);
+      if (cart == null)
+        return NoContent();
+      return Ok(cart);
     }
-    return Ok(cart);
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 
   [HttpPost]
   public async Task<IActionResult> CreateCart(Cart cart)
   {
-    if (await userRepository.GetUserByIdAsync(cart.UserId) == null)
+    try
     {
-      return BadRequest("User not found.");
+      if (await userRepository.GetUserByIdAsync(cart.UserId) == null)
+        return BadRequest("User not found.");
+      var createdCart = await cartRepository.CreateCartAsync(cart);
+      return CreatedAtAction(nameof(GetById), new { cartId = createdCart.Id }, createdCart);
     }
-    var createdCart = await cartRepository.CreateCartAsync(cart);
-    return CreatedAtAction(nameof(GetById), new { cartId = createdCart.Id }, createdCart);
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 
   [HttpPut]
   public async Task<IActionResult> UpdateCart(Cart cart)
   {
-    if (await userRepository.GetUserByIdAsync(cart.UserId) == null)
+    try
     {
-      return BadRequest("User not found.");
+      if (await userRepository.GetUserByIdAsync(cart.UserId) == null)
+        return BadRequest("User not found.");
+      var updatedCart = await cartRepository.UpdateCartAsync(cart);
+      if (updatedCart == null)
+        return NotFound();
+      return Ok(updatedCart);
     }
-    var updatedCart = await cartRepository.UpdateCartAsync(cart);
-    if (updatedCart == null)
+    catch (Exception ex)
     {
-      return NotFound();
+      return StatusCode(500, ex.Message);
     }
-    return Ok(updatedCart);
   }
 
   [HttpDelete("{cartId:guid}")]
   public async Task<IActionResult> DeleteCart(Guid cartId)
   {
-    var deleted = await cartRepository.DeleteCartAsync(cartId);
-    if (!deleted)
+    try
     {
-      return NotFound();
+      var deleted = await cartRepository.DeleteCartAsync(cartId);
+      if (!deleted)
+        return NotFound();
+      return Ok();
     }
-    return Ok();
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 }

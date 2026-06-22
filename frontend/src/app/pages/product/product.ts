@@ -41,7 +41,12 @@ export class ProductPage implements OnInit {
   });
 
   get canAddToCart(): boolean {
-    return this.product()?.status === 'Available';
+    const p = this.product();
+    return p?.status === 'Available' && (p.variants?.length ?? 0) > 0;
+  }
+
+  get hasVariants(): boolean {
+    return (this.product()?.variants?.length ?? 0) > 0;
   }
 
   get effectivePrice(): number {

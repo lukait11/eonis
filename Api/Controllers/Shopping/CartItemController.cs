@@ -16,67 +16,86 @@ public class CartItemController(
   [HttpGet("{cartItemId:guid}")]
   public async Task<IActionResult> GetById(Guid cartItemId)
   {
-    var cartItem = await cartItemRepository.GetCartItemByIdAsync(cartItemId);
-    if (cartItem == null)
+    try
     {
-      return NoContent();
+      var cartItem = await cartItemRepository.GetCartItemByIdAsync(cartItemId);
+      if (cartItem == null)
+        return NoContent();
+      return Ok(cartItem);
     }
-    return Ok(cartItem);
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 
   [HttpGet("cart/{cartId:guid}")]
   public async Task<IActionResult> GetByCartId(Guid cartId)
   {
-    var cartItems = await cartItemRepository.GetCartItemsByCartIdAsync(cartId);
-    if (cartItems == null || !cartItems.Any())
+    try
     {
-      return NoContent();
+      var cartItems = await cartItemRepository.GetCartItemsByCartIdAsync(cartId);
+      if (cartItems == null || !cartItems.Any())
+        return NoContent();
+      return Ok(cartItems);
     }
-    return Ok(cartItems);
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 
   [HttpPost]
   public async Task<IActionResult> Create(CartItem cartItem)
   {
-    if (await cartRepository.GetCartByIdAsync(cartItem.CartId) == null)
+    try
     {
-      return NotFound("Cart not found.");
+      if (await cartRepository.GetCartByIdAsync(cartItem.CartId) == null)
+        return NotFound("Cart not found.");
+      if (await productVariantRepository.GetProductVariantByIdAsync(cartItem.ProductVariantId) == null)
+        return NotFound("Product variant not found.");
+      var createdCartItem = await cartItemRepository.CreateCartItemAsync(cartItem);
+      return CreatedAtAction(nameof(GetById), new { cartItemId = createdCartItem.Id }, createdCartItem);
     }
-    if (await productVariantRepository.GetProductVariantByIdAsync(cartItem.ProductVariantId) == null)
+    catch (Exception ex)
     {
-      return NotFound("Product variant not found.");
+      return StatusCode(500, ex.Message);
     }
-    var createdCartItem = await cartItemRepository.CreateCartItemAsync(cartItem);
-    return CreatedAtAction(nameof(GetById), new { cartItemId = createdCartItem.Id }, createdCartItem);
   }
 
   [HttpPut]
   public async Task<IActionResult> Update(CartItem cartItem)
   {
-    if (await cartRepository.GetCartByIdAsync(cartItem.CartId) == null)
+    try
     {
-      return NotFound("Cart not found.");
+      if (await cartRepository.GetCartByIdAsync(cartItem.CartId) == null)
+        return NotFound("Cart not found.");
+      if (await productVariantRepository.GetProductVariantByIdAsync(cartItem.ProductVariantId) == null)
+        return NotFound("Product variant not found.");
+      var updatedCartItem = await cartItemRepository.UpdateCartItemAsync(cartItem);
+      if (updatedCartItem == null)
+        return NotFound();
+      return Ok(updatedCartItem);
     }
-    if (await productVariantRepository.GetProductVariantByIdAsync(cartItem.ProductVariantId) == null)
+    catch (Exception ex)
     {
-      return NotFound("Product variant not found.");
+      return StatusCode(500, ex.Message);
     }
-    var updatedCartItem = await cartItemRepository.UpdateCartItemAsync(cartItem);
-    if (updatedCartItem == null)
-    {
-      return NotFound();
-    }
-    return Ok(updatedCartItem);
   }
 
   [HttpDelete("{cartItemId:guid}")]
   public async Task<IActionResult> Delete(Guid cartItemId)
   {
-    var deleted = await cartItemRepository.DeleteCartItemAsync(cartItemId);
-    if (!deleted)
+    try
     {
-      return NotFound();
+      var deleted = await cartItemRepository.DeleteCartItemAsync(cartItemId);
+      if (!deleted)
+        return NotFound();
+      return Ok();
     }
-    return Ok();
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 }

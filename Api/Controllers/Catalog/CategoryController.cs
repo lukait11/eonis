@@ -11,71 +11,92 @@ public class CategoryController(ICategoryRepository categoryRepository) : Contro
   [HttpGet]
   public async Task<IActionResult> GetAll()
   {
-    var categories = await categoryRepository.GetCategoriesAsync();
-    if (categories == null || !categories.Any())
+    try
     {
-      return NoContent();
+      var categories = await categoryRepository.GetCategoriesAsync();
+      if (categories == null || !categories.Any())
+        return NoContent();
+      return Ok(categories);
     }
-    return Ok(categories);
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 
   [HttpGet("{categoryId:guid}")]
   public async Task<IActionResult> GetById(Guid categoryId)
   {
-    var category = await categoryRepository.GetCategoryByIdAsync(categoryId);
-    if (category == null)
+    try
     {
-      return NoContent();
+      var category = await categoryRepository.GetCategoryByIdAsync(categoryId);
+      if (category == null)
+        return NoContent();
+      return Ok(category);
     }
-    return Ok(category);
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 
   [HttpPost]
   public async Task<IActionResult> Create(Category category)
   {
-    if(category.ParentCategoryId.HasValue)
+    try
     {
-      var parentCategory = await categoryRepository.GetCategoryByIdAsync(category.ParentCategoryId.Value);
-      if (parentCategory == null)
+      if (category.ParentCategoryId.HasValue)
       {
-        return BadRequest("Parent category does not exist.");
+        var parentCategory = await categoryRepository.GetCategoryByIdAsync(category.ParentCategoryId.Value);
+        if (parentCategory == null)
+          return BadRequest("Parent category does not exist.");
       }
+      var createdCategory = await categoryRepository.CreateCategoryAsync(category);
+      return CreatedAtAction(nameof(GetById), new { categoryId = createdCategory.Id }, createdCategory);
     }
-    var createdCategory = await categoryRepository.CreateCategoryAsync(category);
-    return CreatedAtAction(nameof(GetById), new { categoryId = createdCategory.Id }, createdCategory);
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 
   [HttpPut]
   public async Task<IActionResult> Update(Category category)
   {
-    if (category.Id == Guid.Empty)
+    try
     {
-      return BadRequest();
-    }
-    if(category.ParentCategoryId.HasValue)
-    {
-      var parentCategory = await categoryRepository.GetCategoryByIdAsync(category.ParentCategoryId.Value);
-      if (parentCategory == null)
+      if (category.Id == Guid.Empty)
+        return BadRequest();
+      if (category.ParentCategoryId.HasValue)
       {
-        return BadRequest("Parent category does not exist.");
+        var parentCategory = await categoryRepository.GetCategoryByIdAsync(category.ParentCategoryId.Value);
+        if (parentCategory == null)
+          return BadRequest("Parent category does not exist.");
       }
+      var updatedCategory = await categoryRepository.UpdateCategoryAsync(category);
+      if (updatedCategory == null)
+        return NotFound();
+      return Ok(updatedCategory);
     }
-    var updatedCategory = await categoryRepository.UpdateCategoryAsync(category);
-    if (updatedCategory == null)
+    catch (Exception ex)
     {
-      return NotFound();
+      return StatusCode(500, ex.Message);
     }
-    return Ok(updatedCategory);
   }
 
   [HttpDelete("{categoryId:guid}")]
   public async Task<IActionResult> Delete(Guid categoryId)
   {
-    var deleted = await categoryRepository.DeleteCategoryAsync(categoryId);
-    if (!deleted)
+    try
     {
-      return NotFound();
+      var deleted = await categoryRepository.DeleteCategoryAsync(categoryId);
+      if (!deleted)
+        return NotFound();
+      return Ok();
     }
-    return Ok();
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 }

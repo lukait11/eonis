@@ -16,59 +16,82 @@ public class SellerReviewController(
   [HttpGet("user/{userId:guid}")]
   public async Task<IActionResult> GetByUserId(Guid userId)
   {
-    var reviews = await sellerReviewRepository.GetSellerReviewsByUserIdAsync(userId);
-    if (reviews == null || !reviews.Any())
+    try
     {
-      return NoContent();
+      var reviews = await sellerReviewRepository.GetSellerReviewsByUserIdAsync(userId);
+      if (reviews == null || !reviews.Any())
+        return NoContent();
+      return Ok(reviews);
     }
-    return Ok(reviews);
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 
   [HttpGet("seller/{sellerId:guid}")]
   public async Task<IActionResult> GetBySellerId(Guid sellerId)
   {
-    var reviews = await sellerReviewRepository.GetSellerReviewsBySellerIdAsync(sellerId);
-    if (reviews == null || !reviews.Any())
+    try
     {
-      return NoContent();
+      var reviews = await sellerReviewRepository.GetSellerReviewsBySellerIdAsync(sellerId);
+      if (reviews == null || !reviews.Any())
+        return NoContent();
+      return Ok(reviews);
     }
-    return Ok(reviews);
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 
   [HttpGet("{reviewId:guid}")]
   public async Task<IActionResult> GetById(Guid reviewId)
   {
-    var review = await sellerReviewRepository.GetSellerReviewByIdAsync(reviewId);
-    if (review == null)
+    try
     {
-      return NoContent();
+      var review = await sellerReviewRepository.GetSellerReviewByIdAsync(reviewId);
+      if (review == null)
+        return NoContent();
+      return Ok(review);
     }
-    return Ok(review);
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 
   [HttpPost]
   public async Task<IActionResult> Create(SellerReview sellerReview)
   {
-    if (await sellerProfileRepository.GetSellerProfileByIdAsync(sellerReview.SellerProfileId) == null)
+    try
     {
-      return NotFound($"Seller profile with ID {sellerReview.SellerProfileId} not found.");
+      if (await sellerProfileRepository.GetSellerProfileByIdAsync(sellerReview.SellerProfileId) == null)
+        return NotFound($"Seller profile with ID {sellerReview.SellerProfileId} not found.");
+      if (await applicationUserRepository.GetUserByIdAsync(sellerReview.UserId) == null)
+        return NotFound($"User with ID {sellerReview.UserId} not found.");
+      var createdReview = await sellerReviewRepository.CreateSellerReviewAsync(sellerReview);
+      return CreatedAtAction(nameof(GetById), new { reviewId = createdReview.Id }, createdReview);
     }
-    if (await applicationUserRepository.GetUserByIdAsync(sellerReview.UserId) == null)
+    catch (Exception ex)
     {
-      return NotFound($"User with ID {sellerReview.UserId} not found.");
+      return StatusCode(500, ex.Message);
     }
-    var createdReview = await sellerReviewRepository.CreateSellerReviewAsync(sellerReview);
-    return CreatedAtAction(nameof(GetById), new { reviewId = createdReview.Id }, createdReview);
   }
 
   [HttpDelete("{reviewId:guid}")]
   public async Task<IActionResult> Delete(Guid reviewId)
   {
-    var deleted = await sellerReviewRepository.DeleteSellerReviewAsync(reviewId);
-    if (!deleted)
+    try
     {
-      return NotFound();
+      var deleted = await sellerReviewRepository.DeleteSellerReviewAsync(reviewId);
+      if (!deleted)
+        return NotFound();
+      return Ok();
     }
-    return Ok();
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 }

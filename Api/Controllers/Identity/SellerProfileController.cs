@@ -14,63 +14,84 @@ public class SellerProfileController(
   [HttpGet]
   public async Task<IActionResult> GetAll()
   {
-    var sellerProfiles = await sellerProfileRepository.GetSellerProfilesAsync();
-    if (sellerProfiles == null || !sellerProfiles.Any())
+    try
     {
-      return NoContent();
+      var sellerProfiles = await sellerProfileRepository.GetSellerProfilesAsync();
+      if (sellerProfiles == null || !sellerProfiles.Any())
+        return NoContent();
+      return Ok(sellerProfiles);
     }
-    return Ok(sellerProfiles);
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 
   [HttpGet("{sellerProfileId:guid}")]
   public async Task<IActionResult> GetById(Guid sellerProfileId)
   {
-    var sellerProfile = await sellerProfileRepository.GetSellerProfileByIdAsync(sellerProfileId);
-    if (sellerProfile == null)
+    try
     {
-      return NoContent();
+      var sellerProfile = await sellerProfileRepository.GetSellerProfileByIdAsync(sellerProfileId);
+      if (sellerProfile == null)
+        return NoContent();
+      return Ok(sellerProfile);
     }
-    return Ok(sellerProfile);
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 
   [HttpPost]
   public async Task<IActionResult> Create(SellerProfile sellerProfile)
   {
-    if(await applicationUserRepository.GetUserByIdAsync(sellerProfile.UserId) == null)
+    try
     {
-      return BadRequest("User does not exist.");
+      if (await applicationUserRepository.GetUserByIdAsync(sellerProfile.UserId) == null)
+        return BadRequest("User does not exist.");
+      var createdSellerProfile = await sellerProfileRepository.CreateSellerProfileAsync(sellerProfile);
+      return CreatedAtAction(nameof(GetById), new { sellerProfileId = createdSellerProfile.Id }, createdSellerProfile);
     }
-    var createdSellerProfile = await sellerProfileRepository.CreateSellerProfileAsync(sellerProfile);
-    return CreatedAtAction(nameof(GetById), new { sellerProfileId = createdSellerProfile.Id }, createdSellerProfile);
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 
   [HttpPut]
   public async Task<IActionResult> Update(SellerProfile sellerProfile)
   {
-    if (sellerProfile.Id == Guid.Empty)
+    try
     {
-      return BadRequest();
+      if (sellerProfile.Id == Guid.Empty)
+        return BadRequest();
+      if (await applicationUserRepository.GetUserByIdAsync(sellerProfile.UserId) == null)
+        return BadRequest("User does not exist.");
+      var updatedSellerProfile = await sellerProfileRepository.UpdateSellerProfileAsync(sellerProfile);
+      if (updatedSellerProfile == null)
+        return NotFound();
+      return Ok(updatedSellerProfile);
     }
-    if(await applicationUserRepository.GetUserByIdAsync(sellerProfile.UserId) == null)
+    catch (Exception ex)
     {
-      return BadRequest("User does not exist.");
+      return StatusCode(500, ex.Message);
     }
-    var updatedSellerProfile = await sellerProfileRepository.UpdateSellerProfileAsync(sellerProfile);
-    if (updatedSellerProfile == null)
-    {
-      return NotFound();
-    }
-    return Ok(updatedSellerProfile);
   }
 
   [HttpDelete("{sellerProfileId:guid}")]
   public async Task<IActionResult> Delete(Guid sellerProfileId)
   {
-    var deleted = await sellerProfileRepository.DeleteSellerProfileAsync(sellerProfileId);
-    if (!deleted)
+    try
     {
-      return NotFound();
+      var deleted = await sellerProfileRepository.DeleteSellerProfileAsync(sellerProfileId);
+      if (!deleted)
+        return NotFound();
+      return Ok();
     }
-    return Ok();
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 }

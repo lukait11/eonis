@@ -14,61 +14,84 @@ public class AddressController(
   [HttpGet("user/{userId:guid}")]
   public async Task<IActionResult> GetByUserId(Guid userId)
   {
-    var addresses = await addressRepository.GetAddressesByUserIdAsync(userId);
-    if (addresses == null || !addresses.Any())
+    try
     {
-      return NoContent();
+      var addresses = await addressRepository.GetAddressesByUserIdAsync(userId);
+      if (addresses == null || !addresses.Any())
+        return NoContent();
+      return Ok(addresses);
     }
-    return Ok(addresses);
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 
   [HttpGet("{addressId:guid}")]
   public async Task<IActionResult> GetById(Guid addressId)
   {
-    var address = await addressRepository.GetAddressByIdAsync(addressId);
-    if (address == null)
+    try
     {
-      return NoContent();
+      var address = await addressRepository.GetAddressByIdAsync(addressId);
+      if (address == null)
+        return NoContent();
+      return Ok(address);
     }
-    return Ok(address);
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 
   [HttpPost]
   public async Task<IActionResult> Create(Address address)
   {
-    var user = await applicationUserRepository.GetUserByIdAsync(address.UserId);
-    if (user == null)
+    try
     {
-      return BadRequest("User not found.");
+      var user = await applicationUserRepository.GetUserByIdAsync(address.UserId);
+      if (user == null)
+        return BadRequest("User not found.");
+      await addressRepository.CreateAddressAsync(address);
+      return CreatedAtAction(nameof(GetById), new { addressId = address.Id }, address);
     }
-    await addressRepository.CreateAddressAsync(address);
-    return CreatedAtAction(nameof(GetById), new { addressId = address.Id }, address);
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 
   [HttpPut]
   public async Task<IActionResult> Update(Address address)
   {
-    var user = await applicationUserRepository.GetUserByIdAsync(address.UserId);
-    if (user == null)
+    try
     {
-      return BadRequest("User not found.");
+      var user = await applicationUserRepository.GetUserByIdAsync(address.UserId);
+      if (user == null)
+        return BadRequest("User not found.");
+      var updatedAddress = await addressRepository.UpdateAddressAsync(address);
+      if (updatedAddress == null)
+        return NotFound();
+      return Ok(updatedAddress);
     }
-    var updatedAddress = await addressRepository.UpdateAddressAsync(address);
-    if (updatedAddress == null)
+    catch (Exception ex)
     {
-      return NotFound();
+      return StatusCode(500, ex.Message);
     }
-    return Ok(updatedAddress);
   }
 
   [HttpDelete("{addressId:guid}")]
   public async Task<IActionResult> Delete(Guid addressId)
   {
-    var deleted = await addressRepository.DeleteAddressAsync(addressId);
-    if (!deleted)
+    try
     {
-      return NotFound();
+      var deleted = await addressRepository.DeleteAddressAsync(addressId);
+      if (!deleted)
+        return NotFound();
+      return Ok();
     }
-    return Ok();
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 }

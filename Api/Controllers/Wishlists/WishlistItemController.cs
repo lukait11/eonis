@@ -16,67 +16,86 @@ public class WishlistItemController(
   [HttpGet("{wishlistItemId:guid}")]
   public async Task<IActionResult> GetWishlistItem(Guid wishlistItemId)
   {
-    var wishlistItem = await wishlistItemRepository.GetWishlistItemByIdAsync(wishlistItemId);
-    if (wishlistItem == null)
+    try
     {
-      return NoContent();
+      var wishlistItem = await wishlistItemRepository.GetWishlistItemByIdAsync(wishlistItemId);
+      if (wishlistItem == null)
+        return NoContent();
+      return Ok(wishlistItem);
     }
-    return Ok(wishlistItem);
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 
   [HttpGet("wishlist/{wishlistId:guid}")]
   public async Task<IActionResult> GetWishlistItems(Guid wishlistId)
   {
-    var wishlistItems = await wishlistItemRepository.GetWishlistItemsByWishlistIdAsync(wishlistId);
-    if (!wishlistItems.Any())
+    try
     {
-      return NoContent();
+      var wishlistItems = await wishlistItemRepository.GetWishlistItemsByWishlistIdAsync(wishlistId);
+      if (!wishlistItems.Any())
+        return NoContent();
+      return Ok(wishlistItems);
     }
-    return Ok(wishlistItems);
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 
   [HttpPost]
   public async Task<IActionResult> CreateWishlistItem(WishlistItem wishlistItem)
   {
-    if (await wishlistRepository.GetWishlistByIdAsync(wishlistItem.WishlistId) == null)
+    try
     {
-      return NotFound("Wishlist not found.");
+      if (await wishlistRepository.GetWishlistByIdAsync(wishlistItem.WishlistId) == null)
+        return NotFound("Wishlist not found.");
+      if (await productRepository.GetProductByIdAsync(wishlistItem.ProductId) == null)
+        return NotFound("Product not found.");
+      var createdWishlistItem = await wishlistItemRepository.CreateWishlistItemAsync(wishlistItem);
+      return CreatedAtAction(nameof(GetWishlistItem), new { wishlistItemId = createdWishlistItem.Id }, createdWishlistItem);
     }
-    if (await productRepository.GetProductByIdAsync(wishlistItem.ProductId) == null)
+    catch (Exception ex)
     {
-      return NotFound("Product not found.");
+      return StatusCode(500, ex.Message);
     }
-    var createdWishlistItem = await wishlistItemRepository.CreateWishlistItemAsync(wishlistItem);
-    return CreatedAtAction(nameof(GetWishlistItem), new { wishlistItemId = createdWishlistItem.Id }, createdWishlistItem);
   }
 
   [HttpPut]
   public async Task<IActionResult> UpdateWishlistItem(WishlistItem wishlistItem)
   {
-    if (await wishlistRepository.GetWishlistByIdAsync(wishlistItem.WishlistId) == null)
+    try
     {
-      return NotFound("Wishlist not found.");
+      if (await wishlistRepository.GetWishlistByIdAsync(wishlistItem.WishlistId) == null)
+        return NotFound("Wishlist not found.");
+      if (await productRepository.GetProductByIdAsync(wishlistItem.ProductId) == null)
+        return NotFound("Product not found.");
+      var updatedWishlistItem = await wishlistItemRepository.UpdateWishlistItemAsync(wishlistItem);
+      if (updatedWishlistItem == null)
+        return NotFound();
+      return Ok(updatedWishlistItem);
     }
-    if (await productRepository.GetProductByIdAsync(wishlistItem.ProductId) == null)
+    catch (Exception ex)
     {
-      return NotFound("Product not found.");
+      return StatusCode(500, ex.Message);
     }
-    var updatedWishlistItem = await wishlistItemRepository.UpdateWishlistItemAsync(wishlistItem);
-    if (updatedWishlistItem == null)
-    {
-      return NotFound();
-    }
-    return Ok(updatedWishlistItem);
   }
 
   [HttpDelete("{wishlistItemId:guid}")]
   public async Task<IActionResult> DeleteWishlistItem(Guid wishlistItemId)
   {
-    var deleted = await wishlistItemRepository.DeleteWishlistItemAsync(wishlistItemId);
-    if (!deleted)
+    try
     {
-      return NotFound();
+      var deleted = await wishlistItemRepository.DeleteWishlistItemAsync(wishlistItemId);
+      if (!deleted)
+        return NotFound();
+      return Ok();
     }
-    return Ok();
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 }

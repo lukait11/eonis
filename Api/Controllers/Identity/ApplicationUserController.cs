@@ -17,60 +17,89 @@ public class ApplicationUserController(
   [HttpGet]
   public async Task<IActionResult> GetAll()
   {
-    var users = await applicationUserRepository.GetUsersAsync();
-    if (users == null || !users.Any())
+    try
     {
-      return NoContent();
+      var users = await applicationUserRepository.GetUsersAsync();
+      if (users == null || !users.Any())
+        return NoContent();
+      return Ok(users);
     }
-    return Ok(users);
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 
   [HttpGet("{userId:guid}")]
   public async Task<IActionResult> GetById(Guid userId)
   {
-    var user = await applicationUserRepository.GetUserByIdAsync(userId);
-    if (user == null)
+    try
     {
-      return NoContent();
+      var user = await applicationUserRepository.GetUserByIdAsync(userId);
+      if (user == null)
+        return NoContent();
+      return Ok(user);
     }
-    return Ok(user);
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 
   [HttpPost]
   public async Task<IActionResult> Create(ApplicationUser user)
   {
-    var createdUser = await applicationUserRepository.CreateUserAsync(user);
-    return CreatedAtAction(nameof(GetById), new { userId = createdUser.Id }, createdUser);
+    try
+    {
+      var createdUser = await applicationUserRepository.CreateUserAsync(user);
+      return CreatedAtAction(nameof(GetById), new { userId = createdUser.Id }, createdUser);
+    }
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 
   [HttpPut]
   public async Task<IActionResult> Update(ApplicationUser user)
   {
-    if (user.Id == Guid.Empty)
-      return BadRequest();
+    try
+    {
+      if (user.Id == Guid.Empty)
+        return BadRequest();
 
-    var existing = await applicationUserRepository.GetUserByIdAsync(user.Id);
-    if (existing == null)
-      return NotFound();
+      var existing = await applicationUserRepository.GetUserByIdAsync(user.Id);
+      if (existing == null)
+        return NotFound();
 
-    existing.FirstName = user.FirstName;
-    existing.LastName = user.LastName;
-    existing.PhoneNumber = user.PhoneNumber;
-    existing.DateOfBirth = user.DateOfBirth;
+      existing.FirstName = user.FirstName;
+      existing.LastName = user.LastName;
+      existing.PhoneNumber = user.PhoneNumber;
+      existing.DateOfBirth = user.DateOfBirth;
 
-    var updated = await applicationUserRepository.UpdateUserAsync(existing);
-    return Ok(updated);
+      var updated = await applicationUserRepository.UpdateUserAsync(existing);
+      return Ok(updated);
+    }
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 
   [HttpDelete("{userId:guid}")]
   public async Task<IActionResult> Delete(Guid userId)
   {
-    var deleted = await applicationUserRepository.DeleteUserAsync(userId);
-    if (!deleted)
+    try
     {
-      return NotFound();
+      var deleted = await applicationUserRepository.DeleteUserAsync(userId);
+      if (!deleted)
+        return NotFound();
+      return Ok();
     }
-    return Ok();
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 
   [Authorize]
@@ -79,37 +108,44 @@ public class ApplicationUserController(
   [RequestFormLimits(MultipartBodyLengthLimit = 6 * 1024 * 1024)]
   public async Task<IActionResult> UploadImage(IFormFile file, CancellationToken ct)
   {
-    if (file is null || file.Length == 0)
-      return BadRequest("No file provided.");
-
-    var userId = Guid.Parse(User.FindFirst("sub")!.Value);
-    var user = await applicationUserRepository.GetUserByIdAsync(userId);
-    if (user is null) return Unauthorized();
-  
-    string newUrl;
     try
     {
-      await using var stream = file.OpenReadStream();
-      newUrl = await imageService.ProcessAndUploadAsync(stream, file.ContentType, userId, ct);
+      if (file is null || file.Length == 0)
+        return BadRequest("No file provided.");
+
+      var userId = Guid.Parse(User.FindFirst("sub")!.Value);
+      var user = await applicationUserRepository.GetUserByIdAsync(userId);
+      if (user is null) return Unauthorized();
+
+      string newUrl;
+      try
+      {
+        await using var stream = file.OpenReadStream();
+        newUrl = await imageService.ProcessAndUploadAsync(stream, file.ContentType, userId, ct);
+      }
+      catch (ImageValidationException ex)
+      {
+        return BadRequest(ex.Message);
+      }
+
+      // Delete the old image only after the new one is safely uploaded (versioned key approach)
+      var oldUrl = user.ProfilePictureUrl;
+      user.ProfilePictureUrl = newUrl;
+      await applicationUserRepository.UpdateUserAsync(user);
+
+      if (oldUrl is not null)
+      {
+        var oldKey = ExtractStorageKey(oldUrl);
+        if (oldKey is not null)
+          await storageService.DeleteAsync(oldKey, ct);
+      }
+
+      return Ok(newUrl);
     }
-    catch (ImageValidationException ex)
+    catch (Exception ex)
     {
-      return BadRequest(ex.Message);
+      return StatusCode(500, ex.Message);
     }
-
-    // Delete the old image only after the new one is safely uploaded (versioned key approach)
-    var oldUrl = user.ProfilePictureUrl;
-    user.ProfilePictureUrl = newUrl;
-    await applicationUserRepository.UpdateUserAsync(user);
-
-    if (oldUrl is not null)
-    {
-      var oldKey = ExtractStorageKey(oldUrl);
-      if (oldKey is not null)
-        await storageService.DeleteAsync(oldKey, ct);
-    }
-
-    return Ok(newUrl);
   }
 
   /// <summary>Extracts the storage key (path after bucket) from a full Garage URL.</summary>

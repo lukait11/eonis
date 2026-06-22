@@ -14,63 +14,84 @@ public class ProductVariantController(
   [HttpGet("{productVariantId:guid}")]
   public async Task<IActionResult> GetById(Guid productVariantId)
   {
-    var productVariant = await productVariantRepository.GetProductVariantByIdAsync(productVariantId);
-    if (productVariant == null)
+    try
     {
-      return NoContent();
+      var productVariant = await productVariantRepository.GetProductVariantByIdAsync(productVariantId);
+      if (productVariant == null)
+        return NoContent();
+      return Ok(productVariant);
     }
-    return Ok(productVariant);
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 
   [HttpGet("product/{productId:guid}")]
   public async Task<IActionResult> GetByProductId(Guid productId)
   {
-    var productVariants = await productVariantRepository.GetProductVariantsByProductIdAsync(productId);
-    if (productVariants == null || !productVariants.Any())
+    try
     {
-      return NoContent();
+      var productVariants = await productVariantRepository.GetProductVariantsByProductIdAsync(productId);
+      if (productVariants == null || !productVariants.Any())
+        return NoContent();
+      return Ok(productVariants);
     }
-    return Ok(productVariants);
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 
   [HttpPost]
   public async Task<IActionResult> Create(ProductVariant productVariant)
   {
-    if(await productRepository.GetProductByIdAsync(productVariant.ProductId) == null)
+    try
     {
-      return BadRequest("Product does not exist.");
+      if (await productRepository.GetProductByIdAsync(productVariant.ProductId) == null)
+        return BadRequest("Product does not exist.");
+      var createdProductVariant = await productVariantRepository.CreateProductVariantAsync(productVariant);
+      return CreatedAtAction(nameof(GetById), new { productVariantId = createdProductVariant.Id }, createdProductVariant);
     }
-    var createdProductVariant = await productVariantRepository.CreateProductVariantAsync(productVariant);
-    return CreatedAtAction(nameof(GetById), new { productVariantId = createdProductVariant.Id }, createdProductVariant);
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 
   [HttpPut]
   public async Task<IActionResult> Update(ProductVariant productVariant)
   {
-    if (productVariant.Id == Guid.Empty)
+    try
     {
-      return BadRequest();
+      if (productVariant.Id == Guid.Empty)
+        return BadRequest();
+      if (await productRepository.GetProductByIdAsync(productVariant.ProductId) == null)
+        return BadRequest("Product does not exist.");
+      var updatedProductVariant = await productVariantRepository.UpdateProductVariantAsync(productVariant);
+      if (updatedProductVariant == null)
+        return NotFound();
+      return Ok(updatedProductVariant);
     }
-    if(await productRepository.GetProductByIdAsync(productVariant.ProductId) == null)
+    catch (Exception ex)
     {
-      return BadRequest("Product does not exist.");
+      return StatusCode(500, ex.Message);
     }
-    var updatedProductVariant = await productVariantRepository.UpdateProductVariantAsync(productVariant);
-    if (updatedProductVariant == null)
-    {
-      return NotFound();
-    }
-    return Ok(updatedProductVariant);
   }
 
   [HttpDelete("{productVariantId:guid}")]
   public async Task<IActionResult> Delete(Guid productVariantId)
   {
-    var deleted = await productVariantRepository.DeleteProductVariantAsync(productVariantId);
-    if (!deleted)
+    try
     {
-      return NotFound();
+      var deleted = await productVariantRepository.DeleteProductVariantAsync(productVariantId);
+      if (!deleted)
+        return NotFound();
+      return Ok();
     }
-    return Ok();
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
   }
 }
