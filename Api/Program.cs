@@ -28,7 +28,7 @@ builder.Services.AddDbContext<DatabaseContext>();
 
 var allowedOrigins = builder.Configuration["Cors:AllowedOrigins"]
     ?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-    ?? ["http://localhost:4200"];
+    ?? ["http://localhost:4210"];
 
 builder.Services.AddCors(options =>
   options.AddPolicy("Frontend", policy =>

@@ -37,7 +37,7 @@ services:
       context: frontend
       dockerfile: Dockerfile
     ports:
-      - "4200:80"
+      - "4210:80"
     networks:
       - eonis
     depends_on:
