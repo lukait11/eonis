@@ -1,0 +1,56 @@
+<div class="wishlist-page">
+  <h1>Wishlist</h1>
+
+  @if (loading()) {
+    <div class="loading"><div class="spinner"></div></div>
+  } @else if (views().length === 0) {
+    <div class="empty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+      </svg>
+      <p>Your wishlist is empty</p>
+      <a routerLink="/explore" class="btn-explore">Explore products</a>
+    </div>
+  } @else {
+    <div class="wishlist-grid">
+      @for (v of views(); track v.item.id) {
+        <div class="wish-card">
+          <a [routerLink]="['/product', v.product?.id]" class="wish-img">
+            @if (getImage(v.product)) {
+              <img [src]="getImage(v.product)!" [alt]="v.product?.name" />
+            } @else {
+              <div class="img-placeholder">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+                </svg>
+              </div>
+            }
+          </a>
+
+          <div class="wish-body">
+            <a [routerLink]="['/product', v.product?.id]" class="wish-name">{{ v.product?.name ?? 'Product' }}</a>
+            <p class="wish-price">{{ getPrice(v.product!) | number:'1.2-2' }} RSD</p>
+            @if ((v.product?.discount ?? 0) > 0) {
+              <p class="wish-original">{{ v.product?.basePrice | number:'1.2-2' }}</p>
+            }
+          </div>
+
+          <div class="wish-actions">
+            <button
+              class="btn-add-cart"
+              [disabled]="!v.product?.variants?.length || addingToCart() === v.product?.id"
+              (click)="addToCart(v.product!.id, v)"
+            >
+              {{ addingToCart() === v.product?.id ? 'Adding…' : 'Add to cart' }}
+            </button>
+            <button class="btn-remove" (click)="removeItem(v.item.id)" aria-label="Remove">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

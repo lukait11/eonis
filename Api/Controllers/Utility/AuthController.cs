@@ -24,12 +24,10 @@ public class AuthController(
     if (existing is not null)
       return Conflict("Email already registered.");
 
-    var hash = BCrypt.Net.BCrypt.HashPassword(request.Password);
-
     var user = new ApplicationUser
     {
       Email = normalizedEmail,
-      PasswordHash = hash,
+      PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
       FirstName = request.FirstName,
       LastName = request.LastName,
       Role = request.Role
@@ -39,7 +37,6 @@ public class AuthController(
 
     if (created.Role == UserRole.Seller)
       await sellerProfileRepository.CreateSellerProfileAsync(new SellerProfile { UserId = created.Id });
-
 
     return Created("Account created successfully", null);
   }
@@ -92,15 +89,13 @@ public class AuthController(
     return NoContent();
   }
 
-  // ─── helpers ───────────────────────────────────────────────────────────────
-
   private void SetRefreshTokenCookie(string token)
   {
     Response.Cookies.Append(RefreshTokenService.CookieName, token, new CookieOptions
     {
       HttpOnly = true,
       Secure = false,
-      SameSite = SameSiteMode.None,
+      SameSite = SameSiteMode.Lax,
       Expires = DateTimeOffset.UtcNow.Add(refreshTokenService.TokenTtl)
     });
   }

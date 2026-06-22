@@ -1,0 +1,66 @@
+<section class="hero">
+  <div class="hero-content">
+    <p class="hero-eyebrow">New Season</p>
+    <h1 class="hero-title">Dress Your<br /><em>Story</em></h1>
+    <p class="hero-sub">Discover curated pieces from independent sellers.<br />Quality fashion, directly to you.</p>
+    <div class="hero-actions">
+      <a routerLink="/explore" class="btn-primary">Shop Now</a>
+      <a routerLink="/explore" class="btn-outline">View Collections</a>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="hero-shape"></div>
+  </div>
+</section>
+
+@if (categories().length > 0) {
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Shop by Category</h2>
+        <a routerLink="/explore" class="section-link">All categories →</a>
+      </div>
+      <div class="categories-grid">
+        @for (cat of categories(); track cat.id) {
+          <a [routerLink]="['/explore']" [queryParams]="{ category: cat.id }" class="category-card">
+            <span class="category-name">{{ cat.name }}</span>
+          </a>
+        }
+      </div>
+    </div>
+  </section>
+}
+
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">New Arrivals</h2>
+      <a routerLink="/explore" class="section-link">View all →</a>
+    </div>
+    @if (loading()) {
+      <div class="loading-grid">
+        @for (n of [1,2,3,4]; track n) {
+          <div class="skeleton-card"></div>
+        }
+      </div>
+    } @else if (featured().length === 0) {
+      <p class="empty-state">No products yet. Check back soon.</p>
+    } @else {
+      <div class="products-grid">
+        @for (p of featured(); track p.id) {
+          <app-product-card [product]="p" />
+        }
+      </div>
+    }
+  </div>
+</section>
+
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-box">
+      <h2>Become a Seller</h2>
+      <p>List your products and reach thousands of fashion-forward customers.</p>
+      <a routerLink="/register" class="btn-primary">Start Selling</a>
+    </div>
+  </div>
+</section>

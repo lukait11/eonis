@@ -1,0 +1,67 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-header">
+      <h1>Create account</h1>
+      <p>Join EONIS today</p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="auth-form">
+      @if (error()) {
+        <div class="form-error-banner">{{ error() }}</div>
+      }
+
+      <div class="form-row">
+        <div class="form-field">
+          <label for="firstName">First name</label>
+          <input id="firstName" type="text" formControlName="firstName" placeholder="Jane" />
+        </div>
+        <div class="form-field">
+          <label for="lastName">Last name</label>
+          <input id="lastName" type="text" formControlName="lastName" placeholder="Doe" />
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label for="email">Email</label>
+        <input id="email" type="email" formControlName="email" placeholder="you@example.com" autocomplete="email" />
+        @if (form.get('email')?.invalid && form.get('email')?.touched) {
+          <span class="field-error">Enter a valid email.</span>
+        }
+      </div>
+
+      <div class="form-field">
+        <label for="password">Password</label>
+        <input id="password" type="password" formControlName="password" placeholder="Min. 6 characters" autocomplete="new-password" />
+        @if (form.get('password')?.invalid && form.get('password')?.touched) {
+          <span class="field-error">Password must be at least 6 characters.</span>
+        }
+      </div>
+
+      <div class="form-field">
+        <label>I want to</label>
+        <div class="role-options">
+          <label class="role-option" [class.selected]="form.get('role')?.value === 'Customer'">
+            <input type="radio" formControlName="role" value="Customer" />
+            <span class="role-icon">🛍</span>
+            <span class="role-label">Shop</span>
+            <span class="role-sub">Browse & buy products</span>
+          </label>
+          <label class="role-option" [class.selected]="form.get('role')?.value === 'Seller'">
+            <input type="radio" formControlName="role" value="Seller" />
+            <span class="role-icon">🏪</span>
+            <span class="role-label">Sell</span>
+            <span class="role-sub">List & sell products</span>
+          </label>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-submit" [disabled]="loading()">
+        {{ loading() ? 'Creating account…' : 'Create account' }}
+      </button>
+    </form>
+
+    <p class="auth-footer">
+      Already have an account? <a routerLink="/login">Sign in</a>
+    </p>
+  </div>
+</div>

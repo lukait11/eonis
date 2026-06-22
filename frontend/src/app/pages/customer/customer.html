@@ -1,0 +1,177 @@
+@if (loading()) {
+  <div class="page-loading"><div class="spinner"></div></div>
+} @else {
+  <div class="profile-page">
+    <aside class="profile-sidebar">
+      <div class="avatar-wrap">
+        @if (user()?.profilePictureUrl) {
+          <img class="avatar" [src]="user()!.profilePictureUrl" alt="Profile" />
+        } @else {
+          <div class="avatar-placeholder">{{ (user()?.firstName || '?')[0] }}</div>
+        }
+        <label class="avatar-upload" [class.loading]="uploadingAvatar()">
+          <input type="file" accept="image/*" (change)="onAvatarChange($event)" hidden />
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+        </label>
+      </div>
+
+      <div class="user-info">
+        <p class="user-name">{{ user()?.firstName }} {{ user()?.lastName }}</p>
+        <p class="user-email">{{ user()?.email }}</p>
+        <span class="role-badge">{{ auth.currentUserRole() }}</span>
+      </div>
+
+      <nav class="tab-nav">
+        <button [class.active]="activeTab() === 'profile'" (click)="setTab('profile')">Profile</button>
+        <button [class.active]="activeTab() === 'orders'" (click)="setTab('orders')">
+          Orders <span class="count">{{ orders().length }}</span>
+        </button>
+        <button [class.active]="activeTab() === 'addresses'" (click)="setTab('addresses')">Addresses</button>
+        @if (auth.currentUserRole() === 'Seller') {
+          <button [class.active]="activeTab() === 'store'" (click)="setTab('store')">My Store</button>
+        }
+      </nav>
+    </aside>
+
+    <main class="profile-main">
+      @if (saveMsg()) {
+        <div class="save-banner" [class.error]="saveMsg().includes('Failed')">{{ saveMsg() }}</div>
+      }
+
+      <!-- Profile Tab -->
+      @if (activeTab() === 'profile') {
+        <div class="tab-content">
+          <h2>Personal details</h2>
+          <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="profile-form">
+            <div class="form-row">
+              <div class="form-field">
+                <label>First name</label>
+                <input type="text" formControlName="firstName" />
+              </div>
+              <div class="form-field">
+                <label>Last name</label>
+                <input type="text" formControlName="lastName" />
+              </div>
+            </div>
+            <div class="form-field">
+              <label>Phone number</label>
+              <input type="tel" formControlName="phoneNumber" placeholder="+381..." />
+            </div>
+            <div class="form-field">
+              <label>Date of birth</label>
+              <input type="date" formControlName="dateOfBirth" />
+            </div>
+            <button type="submit" class="btn-save" [disabled]="saving()">
+              {{ saving() ? 'Saving…' : 'Save changes' }}
+            </button>
+          </form>
+        </div>
+      }
+
+      <!-- Orders Tab -->
+      @if (activeTab() === 'orders') {
+        <div class="tab-content">
+          <h2>{{ auth.currentUserRole() === 'Seller' ? 'Orders received' : 'My orders' }}</h2>
+          @if (orders().length === 0) {
+            <p class="empty-text">No orders yet.</p>
+          } @else {
+            <div class="orders-list">
+              @for (o of orders(); track o.id) {
+                <div class="order-card">
+                  <div class="order-header">
+                    <span class="order-id">#{{ o.id.slice(0, 8).toUpperCase() }}</span>
+                    <span class="order-status" [style.color]="statusColor(o.status)">{{ o.status }}</span>
+                  </div>
+                  <div class="order-meta">
+                    <span>{{ o.createdAt | date:'mediumDate' }}</span>
+                    <span class="order-amount">{{ o.baseAmount - o.discount | number:'1.2-2' }} RSD</span>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Addresses Tab -->
+      @if (activeTab() === 'addresses') {
+        <div class="tab-content">
+          <div class="tab-header">
+            <h2>Addresses</h2>
+            <button class="btn-add" (click)="showAddressForm.update(v => !v)">
+              {{ showAddressForm() ? 'Cancel' : '+ Add address' }}
+            </button>
+          </div>
+
+          @if (showAddressForm()) {
+            <form [formGroup]="addressForm" (ngSubmit)="addAddress()" class="address-form">
+              <div class="form-row">
+                <div class="form-field">
+                  <label>Country</label>
+                  <input type="text" formControlName="country" />
+                </div>
+                <div class="form-field">
+                  <label>City</label>
+                  <input type="text" formControlName="city" />
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-field">
+                  <label>Street</label>
+                  <input type="text" formControlName="street" />
+                </div>
+                <div class="form-field">
+                  <label>Postal code</label>
+                  <input type="number" formControlName="postalCode" />
+                </div>
+              </div>
+              <button type="submit" class="btn-save">Add address</button>
+            </form>
+          }
+
+          <div class="addresses-list">
+            @if (addresses().length === 0 && !showAddressForm()) {
+              <p class="empty-text">No addresses saved.</p>
+            }
+            @for (a of addresses(); track a.id) {
+              <div class="address-card">
+                <div class="address-info">
+                  <p class="address-line">{{ a.street }}</p>
+                  <p class="address-sub">{{ a.city }}, {{ a.postalCode }}, {{ a.country }}</p>
+                </div>
+                <button class="btn-delete" (click)="deleteAddress(a.id)" aria-label="Delete">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+                  </svg>
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Store Tab (Seller only) -->
+      @if (activeTab() === 'store' && seller()) {
+        <div class="tab-content">
+          <h2>Store settings</h2>
+          <form [formGroup]="storeForm" (ngSubmit)="saveStore()" class="profile-form">
+            <div class="form-field">
+              <label>Store name</label>
+              <input type="text" formControlName="storeName" />
+            </div>
+            <div class="form-field">
+              <label>Description</label>
+              <textarea formControlName="description" rows="4" placeholder="Tell customers about your store…"></textarea>
+            </div>
+            <button type="submit" class="btn-save" [disabled]="saving()">
+              {{ saving() ? 'Saving…' : 'Save store' }}
+            </button>
+          </form>
+        </div>
+      }
+    </main>
+  </div>
+}

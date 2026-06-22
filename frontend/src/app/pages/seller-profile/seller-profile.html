@@ -1,0 +1,82 @@
+@if (loading()) {
+  <div class="page-loading"><div class="spinner"></div></div>
+} @else if (!seller()) {
+  <div class="page-empty"><p>Seller not found.</p></div>
+} @else {
+  <div class="seller-hero">
+    <div class="seller-hero-inner">
+      @if (seller()!.logoUrl) {
+        <img class="seller-logo" [src]="seller()!.logoUrl" [alt]="seller()!.storeName" />
+      } @else {
+        <div class="seller-logo-placeholder">{{ (seller()!.storeName || 'S')[0] }}</div>
+      }
+      <div class="seller-meta">
+        <h1>{{ seller()!.storeName || 'Unnamed Store' }}</h1>
+        @if (seller()!.description) {
+          <p class="seller-desc">{{ seller()!.description }}</p>
+        }
+        <div class="seller-stats">
+          <div class="stat">
+            <span class="stat-val">{{ products().length }}</span>
+            <span class="stat-lbl">Products</span>
+          </div>
+          <div class="stat">
+            <span class="stat-val">{{ reviews().length }}</span>
+            <span class="stat-lbl">Reviews</span>
+          </div>
+          <div class="stat">
+            <app-star-rating [value]="avgRating" />
+            <span class="stat-lbl">Avg rating</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="seller-body">
+    <section class="seller-section">
+      <h2 class="section-title">Products ({{ products().length }})</h2>
+      @if (products().length === 0) {
+        <p class="empty-text">No products listed yet.</p>
+      } @else {
+        <div class="products-grid">
+          @for (p of products(); track p.id) {
+            <app-product-card [product]="p" />
+          }
+        </div>
+      }
+    </section>
+
+    <section class="seller-section">
+      <h2 class="section-title">Reviews ({{ reviews().length }})</h2>
+
+      @if (auth.isLoggedIn()) {
+        <div class="review-form-card">
+          <h3>Leave a review for this seller</h3>
+          <app-star-rating [value]="reviewRating()" [interactive]="true" (rated)="onRated($event)" />
+          <form [formGroup]="reviewForm" (ngSubmit)="submitReview()" class="review-form">
+            <textarea formControlName="comment" rows="3" placeholder="Share your experience…"></textarea>
+            <button type="submit" class="btn-review" [disabled]="submittingReview() || !reviewRating()">
+              {{ submittingReview() ? 'Posting…' : 'Post review' }}
+            </button>
+          </form>
+        </div>
+      }
+
+      <div class="reviews-list">
+        @if (reviews().length === 0) {
+          <p class="empty-text">No reviews yet.</p>
+        }
+        @for (rv of reviews(); track rv.id) {
+          <div class="review-card">
+            <div class="review-header">
+              <app-star-rating [value]="rv.rating" />
+              <span class="review-date">{{ rv.createdAt | date:'mediumDate' }}</span>
+            </div>
+            <p class="review-comment">{{ rv.comment }}</p>
+          </div>
+        }
+      </div>
+    </section>
+  </div>
+}
