@@ -307,3 +307,7 @@ PLAN.md
 
 # Notification service — internal design docs (not for version control)
 backend/services/Notification/*.md
+
+# documentaion files
+dokumentacija.odt
+dokumentacija.pdf
