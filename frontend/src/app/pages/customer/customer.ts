@@ -99,7 +99,9 @@ export class Customer implements OnInit {
     const raw = this.profileForm.getRawValue();
     const updated: ApplicationUser = {
       ...this.user()!,
-      ...raw,
+      firstName: raw.firstName!,
+      lastName: raw.lastName!,
+      phoneNumber: raw.phoneNumber,
       dateOfBirth: raw.dateOfBirth || null,
     };
     this.userService.updateUser(updated).subscribe({
