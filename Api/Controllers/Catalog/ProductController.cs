@@ -167,7 +167,7 @@ public class ProductController(
         {
           ProductId = productId,
           ImageUrl = proxyUrl,
-          IsPrimary = false
+          IsPrimary = !product.Images.Any()
         };
 
         await productImageRepository.CreateProductImageAsync(newImage);

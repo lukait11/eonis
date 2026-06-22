@@ -128,7 +128,8 @@ export class MyStore implements OnInit {
       next: url => {
         this.products.update(list => list.map(p => {
           if (p.id !== productId) return p;
-          const imgs = [...(p.images ?? []), { id: crypto.randomUUID(), productId, imageUrl: url, isPrimary: false }];
+          const existing = p.images ?? [];
+        const imgs = [...existing, { id: crypto.randomUUID(), productId, imageUrl: url, isPrimary: existing.length === 0 }];
           return { ...p, images: imgs };
         }));
         this.uploadingId.set(null);
