@@ -22,8 +22,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers()
   .AddJsonOptions(opts =>
+  {
     opts.JsonSerializerOptions.Converters.Add(
-      new System.Text.Json.Serialization.JsonStringEnumConverter()));
+      new System.Text.Json.Serialization.JsonStringEnumConverter());
+    opts.JsonSerializerOptions.ReferenceHandler =
+      System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+  });
 builder.Services.AddDbContext<DatabaseContext>();
 
 var allowedOrigins = builder.Configuration["Cors:AllowedOrigins"]
@@ -102,8 +106,8 @@ using(var scope = app.Services.CreateScope())
   }
 }
 
-app.UseHttpsRedirection();
 app.UseCors("Frontend");
+app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
