@@ -37,12 +37,19 @@ public class ProductRepository(DatabaseContext context) : IProductRepository
 
   public async Task<IEnumerable<Product>> GetProductsAsync()
   {
-    return await context.Products.Include(p => p.Images.Where(i => i.IsPrimary == true)).ToListAsync();
+    return await context.Products
+      .Include(p => p.Images.Where(i => i.IsPrimary == true))
+      .Include(p => p.Variants)
+      .ToListAsync();
   }
 
   public async Task<IEnumerable<Product>> GetProductsByCategoryIdAsync(Guid categoryId)
   {
-    return await context.Products.Include(p => p.Images.Where(i => i.IsPrimary == true)).Where(p => p.CategoryId == categoryId).ToListAsync();
+    return await context.Products
+      .Include(p => p.Images.Where(i => i.IsPrimary == true))
+      .Include(p => p.Variants)
+      .Where(p => p.CategoryId == categoryId)
+      .ToListAsync();
   }
 
   public async Task<Product?> UpdateProductAsync(Product product)

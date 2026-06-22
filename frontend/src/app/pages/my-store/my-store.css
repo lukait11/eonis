@@ -42,17 +42,22 @@
 
 .products-grid { display: flex; flex-direction: column; gap: 0.75rem; }
 
+.product-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow: hidden;
+  transition: border-color var(--transition);
+}
+.product-card:hover { border-color: var(--border-focus); }
+.product-card.expanded { border-color: var(--accent); }
+
 .product-row {
   display: flex;
   align-items: center;
   gap: 1rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
   padding: 0.875rem 1rem;
-  transition: border-color var(--transition);
 }
-.product-row:hover { border-color: var(--border-focus); }
 
 .product-thumb { width: 56px; height: 56px; border-radius: var(--radius); overflow: hidden; background: var(--surface-2); flex-shrink: 0; }
 .product-thumb img { width: 100%; height: 100%; object-fit: cover; }
@@ -78,5 +83,35 @@
 .btn-edit:hover { border-color: var(--accent); color: var(--accent); }
 .btn-del { padding: 0.4rem 0.75rem; font-size: 0.78rem; font-weight: 500; background: transparent; border: 1px solid transparent; border-radius: var(--radius); color: var(--text-muted); cursor: pointer; transition: border-color var(--transition), color var(--transition); }
 .btn-del:hover { border-color: rgba(207,68,68,0.5); color: #f08080; }
+
+.btn-variants { padding: 0.4rem 0.75rem; font-size: 0.78rem; font-weight: 500; background: transparent; border: 1px solid var(--border); border-radius: var(--radius); color: var(--text-secondary); cursor: pointer; transition: border-color var(--transition), color var(--transition); }
+.btn-variants:hover { border-color: var(--accent); color: var(--accent); }
+.btn-variants.active { border-color: var(--accent); color: var(--accent); background: rgba(201,169,110,0.08); }
+
+.variants-panel {
+  border-top: 1px solid var(--border);
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: var(--surface-2);
+}
+.variants-panel-title { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-muted); margin: 0; }
+.variants-empty { font-size: 0.83rem; color: var(--text-muted); margin: 0; }
+
+.variants-list { display: flex; flex-direction: column; gap: 0.4rem; }
+.variant-row { display: flex; align-items: center; gap: 0.5rem; }
+.variant-badge { font-size: 0.78rem; font-weight: 600; padding: 0.2rem 0.55rem; background: var(--surface); border: 1px solid var(--border); border-radius: 999px; color: var(--text-secondary); }
+.variant-qty { font-size: 0.78rem; color: var(--text-muted); flex: 1; }
+.btn-variant-del { background: none; border: none; color: var(--text-muted); font-size: 1.1rem; line-height: 1; cursor: pointer; padding: 0 0.25rem; border-radius: var(--radius); transition: color var(--transition); }
+.btn-variant-del:hover { color: #f08080; }
+
+.variant-add-form { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+.variant-add-form input { flex: 1; min-width: 80px; padding: 0.45rem 0.75rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-size: 0.83rem; outline: none; font-family: inherit; transition: border-color var(--transition); }
+.variant-add-form input:focus { border-color: var(--accent); }
+.variant-add-form input[type=number] { max-width: 80px; }
+.btn-variant-add { padding: 0.45rem 1rem; background: var(--accent); color: #000; font-size: 0.83rem; font-weight: 700; border: none; border-radius: var(--radius); cursor: pointer; white-space: nowrap; transition: opacity var(--transition); }
+.btn-variant-add:hover { opacity: 0.85; }
+.btn-variant-add:disabled { opacity: 0.45; cursor: not-allowed; }
 
 @media (max-width: 600px) { .product-row-actions { flex-wrap: wrap; } }

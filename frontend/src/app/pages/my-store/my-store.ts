@@ -33,6 +33,9 @@ export class MyStore implements OnInit {
   uploadingId = signal<string | null>(null);
   deleteConfirm = signal<string | null>(null);
 
+  expandedProductId = signal<string | null>(null);
+  savingVariant = signal(false);
+
   form = this.fb.group({
     name: ['', Validators.required],
     description: [''],
@@ -41,6 +44,12 @@ export class MyStore implements OnInit {
     material: [''],
     status: ['Available'],
     categoryId: [null as string | null],
+  });
+
+  variantForm = this.fb.group({
+    size: ['', Validators.required],
+    color: ['', Validators.required],
+    quantity: [1, [Validators.required, Validators.min(0)]],
   });
 
   ngOnInit(): void {
@@ -92,7 +101,7 @@ export class MyStore implements OnInit {
       const updated: Product = { ...editing, ...val as any };
       this.productService.update(updated).subscribe({
         next: p => {
-          this.products.update(list => list.map(x => x.id === p.id ? p : x));
+          this.products.update(list => list.map(x => x.id === p.id ? { ...p, variants: x.variants } : x));
           this.cancelForm();
           this.saving.set(false);
         },
@@ -129,12 +138,47 @@ export class MyStore implements OnInit {
         this.products.update(list => list.map(p => {
           if (p.id !== productId) return p;
           const existing = p.images ?? [];
-        const imgs = [...existing, { id: crypto.randomUUID(), productId, imageUrl: url, isPrimary: existing.length === 0 }];
+          const imgs = [...existing, { id: crypto.randomUUID(), productId, imageUrl: url, isPrimary: existing.length === 0 }];
           return { ...p, images: imgs };
         }));
         this.uploadingId.set(null);
       },
       error: () => this.uploadingId.set(null),
+    });
+  }
+
+  toggleVariants(productId: string): void {
+    if (this.expandedProductId() === productId) {
+      this.expandedProductId.set(null);
+    } else {
+      this.expandedProductId.set(productId);
+      this.variantForm.reset({ quantity: 1 });
+    }
+  }
+
+  addVariant(productId: string): void {
+    if (this.variantForm.invalid) return;
+    this.savingVariant.set(true);
+    const val = this.variantForm.getRawValue();
+    this.productService.createVariant({ ...val as any, productId }).subscribe({
+      next: v => {
+        this.products.update(list => list.map(p =>
+          p.id === productId ? { ...p, variants: [...(p.variants ?? []), v] } : p
+        ));
+        this.variantForm.reset({ quantity: 1 });
+        this.savingVariant.set(false);
+      },
+      error: () => this.savingVariant.set(false),
+    });
+  }
+
+  deleteVariant(variantId: string, productId: string): void {
+    this.productService.deleteVariant(variantId).subscribe(() => {
+      this.products.update(list => list.map(p =>
+        p.id === productId
+          ? { ...p, variants: (p.variants ?? []).filter(v => v.id !== variantId) }
+          : p
+      ));
     });
   }
 
