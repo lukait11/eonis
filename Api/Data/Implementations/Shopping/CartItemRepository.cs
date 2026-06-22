@@ -39,8 +39,10 @@ public class CartItemRepository(DatabaseContext context) : ICartItemRepository
 
   public async Task<CartItem?> UpdateCartItemAsync(CartItem cartItem)
   {
-    context.CartItems.Update(cartItem);
+    var existing = await context.CartItems.FindAsync(cartItem.Id);
+    if (existing == null) return null;
+    existing.Quantity = cartItem.Quantity;
     await context.SaveChangesAsync();
-    return cartItem;
+    return existing;
   }
 }

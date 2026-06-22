@@ -96,7 +96,12 @@ export class Customer implements OnInit {
   saveProfile(): void {
     if (this.profileForm.invalid || !this.user()) return;
     this.saving.set(true);
-    const updated: ApplicationUser = { ...this.user()!, ...this.profileForm.getRawValue() as any };
+    const raw = this.profileForm.getRawValue();
+    const updated: ApplicationUser = {
+      ...this.user()!,
+      ...raw,
+      dateOfBirth: raw.dateOfBirth || null,
+    };
     this.userService.updateUser(updated).subscribe({
       next: u => {
         this.user.set(u);
