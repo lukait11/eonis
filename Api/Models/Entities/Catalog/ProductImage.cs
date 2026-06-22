@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Api.Models.Entities.Catalog;
 
 public class ProductImage
@@ -8,5 +10,6 @@ public class ProductImage
   public bool IsPrimary { get; set; }
   
   // Navigation properties
+  [JsonIgnore]
   public Product? Product { get; set; }
 }

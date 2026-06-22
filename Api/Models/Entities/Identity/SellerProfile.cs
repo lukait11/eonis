@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Api.Models.Entities.Catalog;
 
 namespace Api.Models.Entities.Identity;
@@ -15,5 +16,7 @@ public class SellerProfile
 
   // Navigation properties
   public ICollection<Product> Products { get; set; } = [];
+  
+  [JsonIgnore]
   public ApplicationUser? User { get; set; }
 }

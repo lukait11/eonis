@@ -23,7 +23,7 @@ public class WishlistController(
     return Ok(wishlist);
   }
 
-  [HttpGet("/user/{userId:guid}")]
+  [HttpGet("user/{userId:guid}")]
   public async Task<IActionResult> GetUserWishlist(Guid userId)
   {
     var wishlist = await wishlistRepository.GetWishlistByUserIdAsync(userId);

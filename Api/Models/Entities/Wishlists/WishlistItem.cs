@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Api.Models.Entities.Catalog;
 
 namespace Api.Models.Entities.Wishlists;
@@ -10,6 +11,7 @@ public class WishlistItem
   public DateTime AddedAt { get; set; }
 
   // Navigation properties
+  [JsonIgnore]
   public Wishlist? Wishlist { get; set; }
   public Product? Product { get; set; }
 }

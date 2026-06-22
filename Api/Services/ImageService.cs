@@ -30,7 +30,7 @@ public class ImageService(IStorageService storage)
   ];
 
   public async Task<string> ProcessAndUploadAsync(
-      Stream inputStream, string contentType, Guid userId, CancellationToken ct = default)
+      Stream inputStream, string contentType, Guid id, CancellationToken ct = default)
   {
     using var buffer = new MemoryStream();
     await inputStream.CopyToAsync(buffer, ct);
@@ -69,7 +69,7 @@ public class ImageService(IStorageService storage)
       await image.SaveAsWebpAsync(output, new WebpEncoder { Quality = WebpQuality }, ct);
       output.Position = 0;
 
-      var key = $"images/{userId}/{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}.webp";
+      var key = $"images/{id}/{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}.webp";
       return await storage.UploadAsync(output, key, "image/webp", ct);
     }
   }

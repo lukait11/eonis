@@ -11,7 +11,7 @@ public class AddressController(
   IAddressRepository addressRepository, IApplicationUserRepository applicationUserRepository
 ) : ControllerBase
 {
-  [HttpGet("/user/{userId:guid}")]
+  [HttpGet("user/{userId:guid}")]
   public async Task<IActionResult> GetByUserId(Guid userId)
   {
     var addresses = await addressRepository.GetAddressesByUserIdAsync(userId);

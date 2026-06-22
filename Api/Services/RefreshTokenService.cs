@@ -3,8 +3,15 @@ using Api.Data.Interfaces.Identity;
 
 namespace Api.Services;
 
-public class RefreshTokenService(IApplicationUserRepository userRepository)
+public class RefreshTokenService(
+  IApplicationUserRepository userRepository,
+  IConfiguration configuration 
+)
 {
+  public const string CookieName = "refreshToken";
+  public TimeSpan TokenTtl =>
+      TimeSpan.FromDays(configuration.GetValue("Jwt:RefreshExpiryDays", 7));
+
   public async Task<string> GenerateRefreshTokenAsync(Guid userId)
   {
     var token = Convert
@@ -18,9 +25,9 @@ public class RefreshTokenService(IApplicationUserRepository userRepository)
     return token;
   }
 
-  public async Task<(Guid userId, string newToken)?> ValidateRefreshTokenAsync(Guid userId, string token)
+  public async Task<(Guid userId, string newToken)?> ValidateRefreshTokenAsync(string token)
   {
-    var user = await userRepository.GetUserByIdAsync(userId);
+    var user = await userRepository.GetUserByRefreshTokenAsync(token);
     if (user is null) return null;
 
     if (user.RefreshToken != token) return null;
@@ -31,9 +38,9 @@ public class RefreshTokenService(IApplicationUserRepository userRepository)
     return (user.Id, newToken);
   }
 
-  public async Task InvalidateRefreshTokenAsync(Guid userId)
+  public async Task InvalidateRefreshTokenAsync(string token)
   {
-    var user = await userRepository.GetUserByIdAsync(userId);
+    var user = await userRepository.GetUserByRefreshTokenAsync(token);
     if (user is null) return;
 
     user.RefreshToken = null;

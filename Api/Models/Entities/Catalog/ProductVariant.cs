@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Api.Models.Entities.Catalog;
 
 public class ProductVariant
@@ -9,6 +11,7 @@ public class ProductVariant
   public int Quantity { get; set; }
 
   // Navigation properties
+  [JsonIgnore]
   public Product? Product { get; set; }
   public IEnumerable<ProductImage>? Images { get; set; }
 }

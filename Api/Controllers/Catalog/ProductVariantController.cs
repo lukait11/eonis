@@ -22,7 +22,7 @@ public class ProductVariantController(
     return Ok(productVariant);
   }
 
-  [HttpGet("/product/{productId:guid}")]
+  [HttpGet("product/{productId:guid}")]
   public async Task<IActionResult> GetByProductId(Guid productId)
   {
     var productVariants = await productVariantRepository.GetProductVariantsByProductIdAsync(productId);

@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Api.Models.Entities.Catalog;
 
 public class Category
@@ -8,5 +10,6 @@ public class Category
   public Guid? ParentCategoryId { get; set; }
 
   // Navigation properties
+  [JsonIgnore]
   public Category? ParentCategory { get; set; } 
 }

@@ -26,10 +26,22 @@ public class ApplicationUserRepository(DatabaseContext context) : IApplicationUs
     return true;
   }
 
+  public async Task<ApplicationUser?> GetUserByEmailAsync(string email)
+  {
+    return await context.Users.FirstOrDefaultAsync(u => u.Email == email);
+  }
+
+
   public async Task<ApplicationUser?> GetUserByIdAsync(Guid userId)
   {
     return await context.Users.FirstOrDefaultAsync(u => u.Id == userId);
   }
+
+  public async Task<ApplicationUser?> GetUserByRefreshTokenAsync(string refreshToken)
+  {
+    return await context.Users.FirstOrDefaultAsync(u => u.RefreshToken == refreshToken);
+  }
+
 
   public async Task<IEnumerable<ApplicationUser>> GetUsersAsync()
   {

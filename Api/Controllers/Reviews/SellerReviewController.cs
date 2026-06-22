@@ -13,7 +13,7 @@ public class SellerReviewController(
   IApplicationUserRepository applicationUserRepository
 ) : ControllerBase
 {
-  [HttpGet("/user/{userId:guid}")]
+  [HttpGet("user/{userId:guid}")]
   public async Task<IActionResult> GetByUserId(Guid userId)
   {
     var reviews = await sellerReviewRepository.GetSellerReviewsByUserIdAsync(userId);
@@ -24,7 +24,7 @@ public class SellerReviewController(
     return Ok(reviews);
   }
 
-  [HttpGet("/seller/{sellerId:guid}")]
+  [HttpGet("seller/{sellerId:guid}")]
   public async Task<IActionResult> GetBySellerId(Guid sellerId)
   {
     var reviews = await sellerReviewRepository.GetSellerReviewsBySellerIdAsync(sellerId);

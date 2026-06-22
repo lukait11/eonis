@@ -14,7 +14,7 @@ public class ProductReviewController(
   IApplicationUserRepository applicationUserRepository
 ) : ControllerBase
 {
-  [HttpGet("/user/{userId:guid}")]
+  [HttpGet("user/{userId:guid}")]
   public async Task<IActionResult> GetByUserId(Guid userId)
   {
     var reviews = await productReviewRepository.GetProductReviewsByUserIdAsync(userId);
@@ -25,7 +25,7 @@ public class ProductReviewController(
     return Ok(reviews);
   }
 
-  [HttpGet("/product/{productId:guid}")]
+  [HttpGet("product/{productId:guid}")]
   public async Task<IActionResult> GetByProductId(Guid productId)
   {
     var reviews = await productReviewRepository.GetProductReviewsByProductIdAsync(productId);

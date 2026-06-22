@@ -24,7 +24,7 @@ public class WishlistItemController(
     return Ok(wishlistItem);
   }
 
-  [HttpGet("/wishlist/{wishlistId:guid}")]
+  [HttpGet("wishlist/{wishlistId:guid}")]
   public async Task<IActionResult> GetWishlistItems(Guid wishlistId)
   {
     var wishlistItems = await wishlistItemRepository.GetWishlistItemsByWishlistIdAsync(wishlistId);

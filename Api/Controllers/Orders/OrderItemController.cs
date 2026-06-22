@@ -24,7 +24,7 @@ public class OrderItemController(
     return Ok(orderItem);
   }
 
-  [HttpGet("/order/{orderId:guid}")]
+  [HttpGet("order/{orderId:guid}")]
   public async Task<IActionResult> GetByOrderId(Guid orderId)
   {
     var orderItems = await orderItemRepository.GetOrderItemsByOrderIdAsync(orderId);

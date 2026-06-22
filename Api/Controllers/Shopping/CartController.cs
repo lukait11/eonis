@@ -24,7 +24,7 @@ public class CartController(
     return Ok(cart);
   }
 
-  [HttpGet("/user/{userId:guid}")]
+  [HttpGet("user/{userId:guid}")]
   public async Task<IActionResult> GetByUserId(Guid userId)
   {
     var cart = await cartRepository.GetCartByUserIdAsync(userId);

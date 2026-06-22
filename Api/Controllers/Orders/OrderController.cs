@@ -36,7 +36,7 @@ public class OrderController(
     return Ok(order);
   }
 
-  [HttpGet("/user/{userId:guid}")]
+  [HttpGet("user/{userId:guid}")]
   public async Task<IActionResult> GetByUserId(Guid userId)
   {
     var orders = await orderRepository.GetOrdersByUserIdAsync(userId);
@@ -47,7 +47,7 @@ public class OrderController(
     return Ok(orders);
   }
 
-  [HttpGet("/seller/{sellerId:guid}")]
+  [HttpGet("seller/{sellerId:guid}")]
   public async Task<IActionResult> GetBySellerId(Guid sellerId)
   {
     var orders = await orderRepository.GetOrdersBySellerIdAsync(sellerId);
@@ -58,7 +58,7 @@ public class OrderController(
     return Ok(orders);
   }
 
-  [HttpGet("/status/{status}")]
+  [HttpGet("status/{status}")]
   public async Task<IActionResult> GetByStatus(OrderStatus status)
   {
     var orders = await orderRepository.GetOrdersByStatusAsync(status);
