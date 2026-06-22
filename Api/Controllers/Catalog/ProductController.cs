@@ -145,7 +145,7 @@ public class ProductController(
       var user = await applicationUserRepository.GetUserByIdAsync(userId);
       if (user is null) return Unauthorized();
 
-      if (user.Role != UserRole.Seller || user.Role != UserRole.Admin)
+      if (user.Role != UserRole.Seller && user.Role != UserRole.Admin)
         return Forbid();
 
       var product = await productRepository.GetProductByIdAsync(productId);
