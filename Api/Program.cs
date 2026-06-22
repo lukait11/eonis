@@ -100,8 +100,9 @@ using(var scope = app.Services.CreateScope())
 }
 
 app.UseHttpsRedirection();
-app.MapControllers();
+app.UseCors("Frontend");
 app.UseAuthentication();
 app.UseAuthorization();
+app.MapControllers();
 
 app.Run();
