@@ -6,7 +6,6 @@ using Api.Models.Entities.Payments;
 using Api.Models.Entities.Reviews;
 using Api.Models.Entities.Shopping;
 using Api.Models.Entities.Wishlists;
-using Microsoft.AspNetCore.Identity;
 
 namespace Api.Data;
 
@@ -138,7 +137,7 @@ public static class SeedData
       BasePrice = 29.99,
       Discount = 15,
       Material = "100% Cotton",
-      Status = "Active",
+      Status = ProductStatus.Available,
       CreatedAt = DateTime.UtcNow,
       UpdatedAt = DateTime.UtcNow
     };
@@ -153,7 +152,7 @@ public static class SeedData
       BasePrice = 59.99,
       Discount = 20,
       Material = "Cotton Blend",
-      Status = "Active",
+      Status = ProductStatus.Available,
       CreatedAt = DateTime.UtcNow,
       UpdatedAt = DateTime.UtcNow
     };
@@ -168,7 +167,7 @@ public static class SeedData
       BasePrice = 24.99,
       Discount = 10,
       Material = "Cotton Canvas",
-      Status = "Active",
+      Status = ProductStatus.Available,
       CreatedAt = DateTime.UtcNow,
       UpdatedAt = DateTime.UtcNow
     };
@@ -183,7 +182,7 @@ public static class SeedData
       BasePrice = 34.99,
       Discount = 25,
       Material = "100% Cotton",
-      Status = "Active",
+      Status = ProductStatus.Available,
       CreatedAt = DateTime.UtcNow,
       UpdatedAt = DateTime.UtcNow
     };
@@ -198,7 +197,7 @@ public static class SeedData
       BasePrice = 79.99,
       Discount = 30,
       Material = "98% Cotton, 2% Elastane",
-      Status = "Active",
+      Status = ProductStatus.Available,
       CreatedAt = DateTime.UtcNow,
       UpdatedAt = DateTime.UtcNow
     };

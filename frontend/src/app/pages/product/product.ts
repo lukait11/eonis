@@ -40,6 +40,10 @@ export class ProductPage implements OnInit {
     comment: ['', Validators.required],
   });
 
+  get canAddToCart(): boolean {
+    return this.product()?.status === 'Available';
+  }
+
   get effectivePrice(): number {
     return this.product() ? effectivePrice(this.product()!) : 0;
   }

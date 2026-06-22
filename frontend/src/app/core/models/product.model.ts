@@ -1,6 +1,8 @@
 import { Category } from './category.model';
 import { SellerProfile } from './seller-profile.model';
 
+export type ProductStatus = 'Available' | 'OutOfStock' | 'Discontinued';
+
 export interface ProductVariant {
   id: string;
   productId: string;
@@ -25,7 +27,7 @@ export interface Product {
   basePrice: number;
   discount: number;
   material: string;
-  status: string;
+  status: ProductStatus;
   createdAt: string;
   updatedAt: string;
   seller?: SellerProfile;
