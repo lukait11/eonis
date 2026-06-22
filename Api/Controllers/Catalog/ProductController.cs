@@ -16,6 +16,7 @@ public class ProductController(
   IProductImageRepository productImageRepository,
   ICategoryRepository categoryRepository,
   IApplicationUserRepository applicationUserRepository,
+  ISellerProfileRepository sellerProfileRepository,
   ImageService imageService
 ) : ControllerBase
 {
@@ -151,7 +152,9 @@ public class ProductController(
       var product = await productRepository.GetProductByIdAsync(productId);
       if (product == null)
         return NotFound();
-      if (product.SellerId != userId)
+
+      var sellerProfile = await sellerProfileRepository.GetSellerProfileByIdAsync(product.SellerId);
+      if (sellerProfile == null || sellerProfile.UserId != userId)
         return Forbid();
 
       string newUrl;
