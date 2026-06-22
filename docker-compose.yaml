@@ -32,6 +32,17 @@ services:
       postgres:
         condition: service_healthy
 
+  frontend:
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    ports:
+      - "4200:80"
+    networks:
+      - eonis
+    depends_on:
+      - api
+
 volumes:
   postgres_data:
 
