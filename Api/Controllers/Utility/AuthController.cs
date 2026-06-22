@@ -113,8 +113,8 @@ public class AuthController(
     Response.Cookies.Append(RefreshTokenService.CookieName, token, new CookieOptions
     {
       HttpOnly = true,
-      Secure = true,
-      SameSite = SameSiteMode.Strict,
+      Secure = false,
+      SameSite = SameSiteMode.None,
       Expires = DateTimeOffset.UtcNow.Add(refreshTokenService.TokenTtl)
     });
   }

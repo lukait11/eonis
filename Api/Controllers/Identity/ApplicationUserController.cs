@@ -69,7 +69,7 @@ public class ApplicationUserController(
     return Ok();
   }
 
-  //[Authorize]
+  [Authorize]
   [HttpPost("me/image")]
   [RequestSizeLimit(6 * 1024 * 1024)]
   [RequestFormLimits(MultipartBodyLengthLimit = 6 * 1024 * 1024)]

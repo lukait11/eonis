@@ -1,7 +1,9 @@
 using Api.Data.Interfaces.Catalog;
 using Api.Data.Interfaces.Identity;
 using Api.Models.Entities.Catalog;
+using Api.Models.Entities.Identity;
 using Api.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers.Catalog;
@@ -94,7 +96,7 @@ public class ProductController(
     return Ok();
   }
 
-  //[Authorize]
+  [Authorize]
   [HttpPost("{productId:guid}/image")]
   [RequestSizeLimit(6 * 1024 * 1024)]
   [RequestFormLimits(MultipartBodyLengthLimit = 6 * 1024 * 1024)]
@@ -111,7 +113,22 @@ public class ProductController(
     var userId = Guid.Parse(User.FindFirst("sub")!.Value);
     var user = await applicationUserRepository.GetUserByIdAsync(userId);
     if (user is null) return Unauthorized();
-  
+
+    if (user.Role != UserRole.Seller || user.Role != UserRole.Admin)
+    {
+      return Forbid();
+    }
+
+    var product = await productRepository.GetProductByIdAsync(productId);
+    if (product == null)
+    {
+      return NotFound();
+    }
+    if (product.SellerId != userId)
+    {
+      return Forbid();
+    }
+
     string newUrl;
     try
     {
