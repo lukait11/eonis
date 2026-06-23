@@ -157,6 +157,69 @@ public class ProductController(
     }
   }
 
+  [HttpGet("{productId:guid}/images")]
+  public async Task<IActionResult> GetImages(Guid productId)
+  {
+    try
+    {
+      var images = await productImageRepository.GetProductImagesByProductIdAsync(productId);
+      return Ok(images.Select(ProductImageResponse.From));
+    }
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
+  }
+
+  [Authorize]
+  [HttpPatch("{productId:guid}/image/{imageId:guid}/primary")]
+  public async Task<IActionResult> SetPrimaryImage(Guid productId, Guid imageId)
+  {
+    try
+    {
+      var product = await productRepository.GetProductByIdAsync(productId);
+      if (product == null) return NotFound("Product not found.");
+
+      var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+      var sellerProfile = await sellerProfileRepository.GetSellerProfileByIdAsync(product.SellerId);
+      if (sellerProfile == null || sellerProfile.UserId != userId) return Forbid();
+
+      var success = await productImageRepository.SetPrimaryImageAsync(imageId, productId);
+      if (!success) return NotFound("Image not found.");
+
+      return NoContent();
+    }
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
+  }
+
+  [Authorize]
+  [HttpDelete("{productId:guid}/image/{imageId:guid}")]
+  public async Task<IActionResult> DeleteImage(Guid productId, Guid imageId)
+  {
+    try
+    {
+      var product = await productRepository.GetProductByIdAsync(productId);
+      if (product == null) return NotFound("Product not found.");
+
+      var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+      var sellerProfile = await sellerProfileRepository.GetSellerProfileByIdAsync(product.SellerId);
+      if (sellerProfile == null || sellerProfile.UserId != userId) return Forbid();
+
+      var image = await productImageRepository.GetProductImageByIdAsync(imageId);
+      if (image == null || image.ProductId != productId) return NotFound("Image not found.");
+
+      await productImageRepository.DeleteProductImageAsync(imageId);
+      return NoContent();
+    }
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
+  }
+
   [Authorize]
   [HttpPost("{productId:guid}/image")]
   [RequestSizeLimit(6 * 1024 * 1024)]

@@ -54,10 +54,22 @@ export class ProductService {
     return this.http.delete<void>(`${this.api}/${id}`);
   }
 
+  getImages(productId: string): Observable<ProductImage[]> {
+    return this.http.get<ProductImage[]>(`${this.api}/${productId}/images`);
+  }
+
   uploadImage(productId: string, file: File): Observable<string> {
     const form = new FormData();
     form.append('file', file);
     return this.http.post<string>(`${this.api}/${productId}/image`, form);
+  }
+
+  setPrimaryImage(productId: string, imageId: string): Observable<void> {
+    return this.http.patch<void>(`${this.api}/${productId}/image/${imageId}/primary`, {});
+  }
+
+  deleteImage(productId: string, imageId: string): Observable<void> {
+    return this.http.delete<void>(`${this.api}/${productId}/image/${imageId}`);
   }
 
   getVariants(productId: string): Observable<ProductVariant[]> {

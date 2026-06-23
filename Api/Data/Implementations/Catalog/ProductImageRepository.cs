@@ -43,4 +43,20 @@ public class ProductImageRepository(DatabaseContext context) : IProductImageRepo
     await context.SaveChangesAsync();
     return existingProductImage;
   }
+
+  public async Task<bool> SetPrimaryImageAsync(Guid imageId, Guid productId)
+  {
+    var images = await context.ProductImages
+      .Where(pi => pi.ProductId == productId)
+      .ToListAsync();
+
+    var target = images.FirstOrDefault(i => i.Id == imageId);
+    if (target == null) return false;
+
+    foreach (var img in images)
+      img.IsPrimary = img.Id == imageId;
+
+    await context.SaveChangesAsync();
+    return true;
+  }
 }

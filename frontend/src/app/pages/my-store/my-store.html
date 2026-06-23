@@ -127,6 +127,13 @@
                 </label>
                 <button
                   class="btn-variants"
+                  [class.active]="expandedImagesProductId() === p.id"
+                  (click)="toggleImages(p.id)"
+                >
+                  Images{{ p.images?.length ? ' (' + (productImages()[p.id]?.length ?? p.images!.length) + ')' : '' }}
+                </button>
+                <button
+                  class="btn-variants"
                   [class.active]="expandedProductId() === p.id"
                   (click)="toggleVariants(p.id)"
                 >
@@ -137,6 +144,31 @@
                 <button class="btn-del" (click)="confirmDelete(p.id)">Delete</button>
               </div>
             </div>
+
+            @if (expandedImagesProductId() === p.id) {
+              <div class="variants-panel">
+                <p class="variants-panel-title">Images</p>
+                @if (loadingImagesId() === p.id) {
+                  <p class="variants-empty">Loading…</p>
+                } @else if (!(productImages()[p.id]?.length)) {
+                  <p class="variants-empty">No images yet. Upload one using the Image button.</p>
+                } @else {
+                  <div class="images-grid">
+                    @for (img of productImages()[p.id]; track img.id) {
+                      <div class="image-thumb-wrap" [class.is-primary]="img.isPrimary">
+                        <img class="image-thumb" [src]="img.imageUrl" [alt]="p.name" />
+                        @if (img.isPrimary) {
+                          <span class="img-primary-badge">Primary</span>
+                        } @else {
+                          <button class="img-set-primary-btn" (click)="setPrimaryImage(img.id, p.id)" title="Set as primary">★</button>
+                        }
+                        <button class="img-delete-btn" (click)="deleteImage(img.id, p.id)" title="Delete image">×</button>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
 
             @if (expandedProductId() === p.id) {
               <div class="variants-panel">

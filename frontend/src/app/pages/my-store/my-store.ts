@@ -6,7 +6,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { SellerProfileService } from '../../core/services/seller-profile.service';
 import { ProductService } from '../../core/services/product.service';
 import { CategoryService } from '../../core/services/category.service';
-import { Product, ProductVariant, primaryImage, effectivePrice } from '../../core/models/product.model';
+import { Product, ProductVariant, ProductImage, primaryImage, effectivePrice } from '../../core/models/product.model';
 import { Category } from '../../core/models/category.model';
 import { SellerProfile } from '../../core/models/seller-profile.model';
 
@@ -36,6 +36,10 @@ export class MyStore implements OnInit {
   expandedProductId = signal<string | null>(null);
   savingVariant = signal(false);
   editingVariantId = signal<string | null>(null);
+
+  expandedImagesProductId = signal<string | null>(null);
+  productImages = signal<Record<string, ProductImage[]>>({});
+  loadingImagesId = signal<string | null>(null);
 
   form = this.fb.group({
     name: ['', Validators.required],
@@ -217,6 +221,50 @@ export class MyStore implements OnInit {
           ? { ...p, variants: (p.variants ?? []).filter(v => v.id !== variantId) }
           : p
       ));
+    });
+  }
+
+  toggleImages(productId: string): void {
+    if (this.expandedImagesProductId() === productId) {
+      this.expandedImagesProductId.set(null);
+      return;
+    }
+    this.expandedImagesProductId.set(productId);
+    if (this.productImages()[productId]) return;
+    this.loadingImagesId.set(productId);
+    this.productService.getImages(productId).subscribe({
+      next: imgs => {
+        this.productImages.update(m => ({ ...m, [productId]: imgs }));
+        this.loadingImagesId.set(null);
+      },
+      error: () => this.loadingImagesId.set(null),
+    });
+  }
+
+  setPrimaryImage(imageId: string, productId: string): void {
+    this.productService.setPrimaryImage(productId, imageId).subscribe(() => {
+      this.productImages.update(m => ({
+        ...m,
+        [productId]: (m[productId] ?? []).map(i => ({ ...i, isPrimary: i.id === imageId })),
+      }));
+      this.products.update(list => list.map(p => {
+        if (p.id !== productId) return p;
+        const all = this.productImages()[productId] ?? [];
+        const newPrimary = all.find(i => i.id === imageId);
+        return { ...p, images: newPrimary ? [newPrimary] : p.images };
+      }));
+    });
+  }
+
+  deleteImage(imageId: string, productId: string): void {
+    this.productService.deleteImage(productId, imageId).subscribe(() => {
+      const remaining = (this.productImages()[productId] ?? []).filter(i => i.id !== imageId);
+      this.productImages.update(m => ({ ...m, [productId]: remaining }));
+      this.products.update(list => list.map(p => {
+        if (p.id !== productId) return p;
+        const newPrimary = remaining.find(i => i.isPrimary) ?? remaining[0] ?? null;
+        return { ...p, images: newPrimary ? [newPrimary] : [] };
+      }));
     });
   }
 

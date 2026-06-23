@@ -9,4 +9,5 @@ public interface IProductImageRepository
   Task<ProductImage> CreateProductImageAsync(ProductImage productImage);
   Task<ProductImage?> UpdateProductImageAsync(ProductImage productImage);
   Task<bool> DeleteProductImageAsync(Guid productImageId);
+  Task<bool> SetPrimaryImageAsync(Guid imageId, Guid productId);
 }
