@@ -1,4 +1,5 @@
 using Api.Contracts.Orders;
+using Api.Data.Interfaces.Catalog;
 using Api.Data.Interfaces.Identity;
 using Api.Data.Interfaces.Orders;
 using Api.Models.DTO.Orders;
@@ -13,7 +14,9 @@ public class OrderController(
   IOrderRepository orderRepository,
   IApplicationUserRepository applicationUserRepository,
   ISellerProfileRepository sellerProfileRepository,
-  IAddressRepository addressRepository
+  IAddressRepository addressRepository,
+  IOrderItemRepository orderItemRepository,
+  IProductVariantRepository productVariantRepository
 ) : ControllerBase
 {
   [HttpGet]
@@ -126,7 +129,22 @@ public class OrderController(
       var existing = await orderRepository.GetOrderByIdAsync(orderId);
       if (existing == null) return NotFound();
 
+      var previousStatus = existing.Status;
       existing.Status = request.Status;
+
+      if (previousStatus != OrderStatus.Paid && request.Status == OrderStatus.Paid)
+      {
+        var items = await orderItemRepository.GetOrderItemsByOrderIdAsync(orderId);
+        foreach (var item in items)
+        {
+          var variant = await productVariantRepository.GetProductVariantByIdAsync(item.ProductVariantId);
+          if (variant != null)
+          {
+            variant.Quantity = Math.Max(0, variant.Quantity - item.Quantity);
+            await productVariantRepository.UpdateProductVariantAsync(variant);
+          }
+        }
+      }
 
       var updated = await orderRepository.UpdateOrderAsync(existing);
       return Ok(OrderResponse.From(updated!));

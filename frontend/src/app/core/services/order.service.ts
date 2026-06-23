@@ -36,7 +36,7 @@ export class OrderService {
     return this.http.post<OrderItem>(this.itemApi, body);
   }
 
-  updateStatus(order: Order): Observable<Order> {
-    return this.http.put<Order>(this.api, order);
+  updateStatus(orderId: string, status: string): Observable<Order> {
+    return this.http.put<Order>(`${this.api}/${orderId}/status`, { id: orderId, status });
   }
 }
