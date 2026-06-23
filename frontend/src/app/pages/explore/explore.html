@@ -29,10 +29,9 @@
     <div class="filter-group">
       <label class="filter-label">Sort by</label>
       <select class="filter-select" [value]="sort()" (change)="onSort($any($event.target).value)">
-        <option value="default">Default</option>
+        <option value="default">Newest</option>
         <option value="price-asc">Price: Low to High</option>
         <option value="price-desc">Price: High to Low</option>
-        <option value="newest">Newest</option>
       </select>
     </div>
   </aside>
@@ -40,8 +39,13 @@
   <main class="results">
     <div class="results-bar">
       <p class="results-count">
-        @if (loading()) { Loading... }
-        @else { {{ filtered().length }} product{{ filtered().length !== 1 ? 's' : '' }} }
+        @if (loading()) {
+          Loading…
+        } @else if (totalCount() === 0) {
+          No products found
+        } @else {
+          Showing {{ rangeStart() }}–{{ rangeEnd() }} of {{ totalCount() }} product{{ totalCount() !== 1 ? 's' : '' }}
+        }
       </p>
     </div>
 
@@ -51,7 +55,7 @@
           <div class="skeleton-card"></div>
         }
       </div>
-    } @else if (filtered().length === 0) {
+    } @else if (items().length === 0) {
       <div class="empty">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
           <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
@@ -61,10 +65,36 @@
       </div>
     } @else {
       <div class="products-grid">
-        @for (p of filtered(); track p.id) {
+        @for (p of items(); track p.id) {
           <app-product-card [product]="p" />
         }
       </div>
+
+      @if (totalPages() > 1) {
+        <div class="pagination">
+          <button class="page-btn" [disabled]="page() === 1" (click)="goTo(page() - 1)">←</button>
+
+          @if (pageNumbers()[0] > 1) {
+            <button class="page-btn" (click)="goTo(1)">1</button>
+            @if (pageNumbers()[0] > 2) {
+              <span class="page-ellipsis">…</span>
+            }
+          }
+
+          @for (n of pageNumbers(); track n) {
+            <button class="page-btn" [class.active]="n === page()" (click)="goTo(n)">{{ n }}</button>
+          }
+
+          @if (pageNumbers()[pageNumbers().length - 1] < totalPages()) {
+            @if (pageNumbers()[pageNumbers().length - 1] < totalPages() - 1) {
+              <span class="page-ellipsis">…</span>
+            }
+            <button class="page-btn" (click)="goTo(totalPages())">{{ totalPages() }}</button>
+          }
+
+          <button class="page-btn" [disabled]="page() === totalPages()" (click)="goTo(page() + 1)">→</button>
+        </div>
+      }
     }
   </main>
 </div>

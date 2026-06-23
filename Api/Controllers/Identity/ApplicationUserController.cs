@@ -76,7 +76,9 @@ public class ApplicationUserController(
       existing.FirstName = user.FirstName;
       existing.LastName = user.LastName;
       existing.PhoneNumber = user.PhoneNumber;
-      existing.DateOfBirth = user.DateOfBirth;
+      existing.DateOfBirth = user.DateOfBirth.HasValue
+        ? DateTime.SpecifyKind(user.DateOfBirth.Value, DateTimeKind.Utc)
+        : null;
 
       var updated = await applicationUserRepository.UpdateUserAsync(existing);
       return Ok(updated);

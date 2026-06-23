@@ -21,14 +21,17 @@ public class ProductController(
 ) : ControllerBase
 {
   [HttpGet]
-  public async Task<IActionResult> GetAll()
+  public async Task<IActionResult> GetAll(
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 12,
+    [FromQuery] string? search = null,
+    [FromQuery] Guid? categoryId = null,
+    [FromQuery] string? sort = null)
   {
     try
     {
-      var products = await productRepository.GetProductsAsync();
-      if (products == null || !products.Any())
-        return NoContent();
-      return Ok(products);
+      var result = await productRepository.GetProductsPagedAsync(page, pageSize, search, categoryId, sort);
+      return Ok(result);
     }
     catch (Exception ex)
     {

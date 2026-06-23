@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { Product, ProductVariant } from '../models/product.model';
+import { PagedResult } from '../models/paged-result.model';
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
@@ -12,8 +13,16 @@ export class ProductService {
 
   constructor(private http: HttpClient) {}
 
+  getPaged(page: number, pageSize: number, search?: string, categoryId?: string, sort?: string): Observable<PagedResult<Product>> {
+    let params = new HttpParams().set('page', page).set('pageSize', pageSize);
+    if (search) params = params.set('search', search);
+    if (categoryId) params = params.set('categoryId', categoryId);
+    if (sort && sort !== 'default') params = params.set('sort', sort);
+    return this.http.get<PagedResult<Product>>(this.api, { params });
+  }
+
   getAll(): Observable<Product[]> {
-    return this.http.get<Product[]>(this.api).pipe(map(r => r ?? []));
+    return this.getPaged(1, 1000).pipe(map(r => r.items));
   }
 
   getById(id: string): Observable<Product> {

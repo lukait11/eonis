@@ -1,5 +1,6 @@
 using Api.Context;
 using Api.Data.Interfaces.Catalog;
+using Api.Models;
 using Api.Models.Entities.Catalog;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,6 +8,34 @@ namespace Api.Data.Implementations.Catalog;
 
 public class ProductRepository(DatabaseContext context) : IProductRepository
 {
+  public async Task<PagedResult<Product>> GetProductsPagedAsync(int page, int pageSize, string? search, Guid? categoryId, string? sort)
+  {
+    var query = context.Products
+      .Include(p => p.Images.Where(i => i.IsPrimary == true))
+      .Include(p => p.Variants)
+      .AsQueryable();
+
+    if (!string.IsNullOrWhiteSpace(search))
+      query = query.Where(p => p.Name != null && p.Name.ToLower().Contains(search.ToLower()));
+
+    if (categoryId.HasValue)
+      query = query.Where(p => p.CategoryId == categoryId);
+
+    query = sort switch
+    {
+      "price-asc"  => query.OrderBy(p => p.BasePrice * (1 - p.Discount / 100.0)),
+      "price-desc" => query.OrderByDescending(p => p.BasePrice * (1 - p.Discount / 100.0)),
+      "newest"     => query.OrderByDescending(p => p.CreatedAt),
+      _            => query.OrderByDescending(p => p.CreatedAt),
+    };
+
+    var totalCount = await query.CountAsync();
+    var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+
+    return new PagedResult<Product>(items, totalCount, page, pageSize);
+  }
+
+
   public async Task<Product> CreateProductAsync(Product product)
   {
     product.CreatedAt = DateTime.UtcNow;
