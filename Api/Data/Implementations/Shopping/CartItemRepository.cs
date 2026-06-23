@@ -45,4 +45,11 @@ public class CartItemRepository(DatabaseContext context) : ICartItemRepository
     await context.SaveChangesAsync();
     return existing;
   }
+
+  public async Task DeleteCartItemsByCartIdAsync(Guid cartId)
+  {
+    var items = await context.CartItems.Where(ci => ci.CartId == cartId).ToListAsync();
+    context.CartItems.RemoveRange(items);
+    await context.SaveChangesAsync();
+  }
 }

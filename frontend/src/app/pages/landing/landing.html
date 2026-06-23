@@ -13,23 +13,6 @@
   </div>
 </section>
 
-@if (categories().length > 0) {
-  <section class="section">
-    <div class="container">
-      <div class="section-header">
-        <h2 class="section-title">Shop by Category</h2>
-        <a routerLink="/explore" class="section-link">All categories →</a>
-      </div>
-      <div class="categories-grid">
-        @for (cat of categories(); track cat.id) {
-          <a [routerLink]="['/explore']" [queryParams]="{ category: cat.id }" class="category-card">
-            <span class="category-name">{{ cat.name }}</span>
-          </a>
-        }
-      </div>
-    </div>
-  </section>
-}
 
 <section class="section">
   <div class="container">
@@ -60,7 +43,7 @@
     <div class="cta-box">
       <h2>Become a Seller</h2>
       <p>List your products and reach thousands of fashion-forward customers.</p>
-      <a routerLink="/register" class="btn-primary">Start Selling</a>
+      <a routerLink="/register" [queryParams]="{ role: 'Seller' }" class="btn-primary">Start Selling</a>
     </div>
   </div>
 </section>

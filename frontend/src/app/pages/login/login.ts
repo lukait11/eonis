@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { CartService } from '../../core/services/cart.service';
 import { WishlistService } from '../../core/services/wishlist.service';
@@ -17,6 +17,7 @@ export class Login {
   private cart = inject(CartService);
   private wishlist = inject(WishlistService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   form = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
@@ -38,7 +39,8 @@ export class Login {
         console.log('[Login] resolved userId:', userId);
         this.cart.loadCart(userId).subscribe();
         this.wishlist.loadWishlist(userId).subscribe();
-        this.router.navigate(['/']);
+        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') ?? '/';
+        this.router.navigateByUrl(returnUrl);
       },
       error: (err) => {
         console.error('[Login] error:', err);

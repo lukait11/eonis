@@ -31,6 +31,8 @@ export class Customer implements OnInit {
   seller = signal<SellerProfile | null>(null);
   orders = signal<Order[]>([]);
   addresses = signal<Address[]>([]);
+  selectedOrder = signal<Order | null>(null);
+  loadingOrder = signal(false);
   loading = signal(true);
   activeTab = signal<Tab>('profile');
 
@@ -91,7 +93,17 @@ export class Customer implements OnInit {
     this.addressService.getByUser(userId).subscribe(a => this.addresses.set(a));
   }
 
-  setTab(t: Tab): void { this.activeTab.set(t); }
+  setTab(t: Tab): void { this.activeTab.set(t); this.selectedOrder.set(null); }
+
+  selectOrder(order: Order): void {
+    this.loadingOrder.set(true);
+    this.orderService.getById(order.id).subscribe({
+      next: full => { this.selectedOrder.set(full); this.loadingOrder.set(false); },
+      error: () => { this.selectedOrder.set(order); this.loadingOrder.set(false); },
+    });
+  }
+
+  closeOrder(): void { this.selectedOrder.set(null); }
 
   saveProfile(): void {
     if (this.profileForm.invalid || !this.user()) return;

@@ -62,6 +62,15 @@ export class CartService {
     );
   }
 
+  clearItems(cartId: string): Observable<void> {
+    return this.http.delete<void>(`${this.itemApi}/cart/${cartId}`).pipe(
+      tap(() => {
+        const cart = this._cart();
+        if (cart) this.loadCart(cart.userId).subscribe();
+      })
+    );
+  }
+
   clear(): void {
     this._cart.set(null);
   }

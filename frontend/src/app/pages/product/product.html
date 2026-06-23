@@ -87,7 +87,7 @@
             </svg>
           </button>
         } @else {
-          <a routerLink="/login" class="btn-cart">Sign in to purchase</a>
+          <a routerLink="/login" [queryParams]="{ returnUrl: '/product/' + product()!.id }" class="btn-cart">Sign in to purchase</a>
         }
       </div>
       @if (cartMessage()) {

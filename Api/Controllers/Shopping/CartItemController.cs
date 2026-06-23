@@ -110,4 +110,18 @@ public class CartItemController(
       return StatusCode(500, ex.Message);
     }
   }
+
+  [HttpDelete("cart/{cartId:guid}")]
+  public async Task<IActionResult> ClearCart(Guid cartId)
+  {
+    try
+    {
+      await cartItemRepository.DeleteCartItemsByCartIdAsync(cartId);
+      return Ok();
+    }
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
+  }
 }

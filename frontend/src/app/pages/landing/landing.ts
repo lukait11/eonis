@@ -2,9 +2,7 @@ import { Component, OnInit, signal, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ProductCard } from '../../shared/components/product-card/product-card';
 import { ProductService } from '../../core/services/product.service';
-import { CategoryService } from '../../core/services/category.service';
 import { Product } from '../../core/models/product.model';
-import { Category } from '../../core/models/category.model';
 
 @Component({
   selector: 'app-landing',
@@ -14,10 +12,8 @@ import { Category } from '../../core/models/category.model';
 })
 export class Landing implements OnInit {
   private productService = inject(ProductService);
-  private categoryService = inject(CategoryService);
 
   featured = signal<Product[]>([]);
-  categories = signal<Category[]>([]);
   loading = signal(true);
 
   ngOnInit(): void {
@@ -27,10 +23,6 @@ export class Landing implements OnInit {
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
-    });
-
-    this.categoryService.getAll().subscribe({
-      next: cats => this.categories.set(cats.slice(0, 6)),
     });
   }
 }

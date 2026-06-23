@@ -27,7 +27,10 @@ public class OrderRepository(DatabaseContext context) : IOrderRepository
 
   public async Task<Order?> GetOrderByIdAsync(Guid orderId)
   {
-    return await context.Orders.Include(o => o.Items).FirstOrDefaultAsync(o => o.Id == orderId);
+    return await context.Orders
+      .Include(o => o.Address)
+      .Include(o => o.Items).ThenInclude(i => i.ProductVariant)
+      .FirstOrDefaultAsync(o => o.Id == orderId);
   }
 
   public async Task<IEnumerable<Order>> GetOrdersAsync()

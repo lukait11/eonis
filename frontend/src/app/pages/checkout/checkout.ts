@@ -183,6 +183,10 @@ export class Checkout implements OnInit {
       this.errorMessage.set(error.message ?? 'Payment failed.');
       this.processing.set(false);
     } else {
+      const cart = this.cartService.cart();
+      if (cart) {
+        this.cartService.clearItems(cart.id).subscribe();
+      }
       this.phase.set('success');
       this.processing.set(false);
     }

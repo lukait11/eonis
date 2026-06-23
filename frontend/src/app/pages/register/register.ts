@@ -1,6 +1,6 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
@@ -9,10 +9,11 @@ import { AuthService } from '../../core/services/auth.service';
   templateUrl: './register.html',
   styleUrl: './register.css',
 })
-export class Register {
+export class Register implements OnInit {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   form = this.fb.group({
     firstName: ['', Validators.required],
@@ -24,6 +25,11 @@ export class Register {
 
   error = signal('');
   loading = signal(false);
+
+  ngOnInit(): void {
+    const role = this.route.snapshot.queryParamMap.get('role');
+    if (role === 'Seller') this.form.patchValue({ role: 'Seller' });
+  }
 
   onSubmit(): void {
     if (this.form.invalid) return;
