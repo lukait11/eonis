@@ -44,17 +44,10 @@ public class CategoryController(ICategoryRepository categoryRepository) : Contro
   {
     try
     {
-      if (request.ParentCategoryId.HasValue)
-      {
-        var parent = await categoryRepository.GetCategoryByIdAsync(request.ParentCategoryId.Value);
-        if (parent == null) return BadRequest("Parent category does not exist.");
-      }
-
       var category = new Category
       {
         Name = request.Name,
         Description = request.Description,
-        ParentCategoryId = request.ParentCategoryId,
       };
 
       var created = await categoryRepository.CreateCategoryAsync(category);
@@ -71,18 +64,11 @@ public class CategoryController(ICategoryRepository categoryRepository) : Contro
   {
     try
     {
-      if (request.ParentCategoryId.HasValue)
-      {
-        var parent = await categoryRepository.GetCategoryByIdAsync(request.ParentCategoryId.Value);
-        if (parent == null) return BadRequest("Parent category does not exist.");
-      }
-
       var existing = await categoryRepository.GetCategoryByIdAsync(categoryId);
       if (existing == null) return NotFound();
 
       existing.Name = request.Name;
       existing.Description = request.Description;
-      existing.ParentCategoryId = request.ParentCategoryId;
 
       var updated = await categoryRepository.UpdateCategoryAsync(existing);
       return Ok(CategoryResponse.From(updated!));

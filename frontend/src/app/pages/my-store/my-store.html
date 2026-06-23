@@ -57,9 +57,8 @@
               </div>
             </div>
             <div class="form-field">
-              <label>Category</label>
-              <select formControlName="categoryId">
-                <option [value]="null">No category</option>
+              <label>Categories <span class="form-hint">(hold Ctrl / Cmd to select multiple)</span></label>
+              <select formControlName="categoryIds" multiple class="category-multiselect">
                 @for (c of categories(); track c.id) {
                   <option [value]="c.id">{{ c.name }}</option>
                 }

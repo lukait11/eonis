@@ -13,19 +13,19 @@ public class ProductRepository(DatabaseContext context) : IProductRepository
     var query = context.Products
       .Include(p => p.Images.Where(i => i.IsPrimary == true))
       .Include(p => p.Variants)
+      .Include(p => p.Categories)
       .AsQueryable();
 
     if (!string.IsNullOrWhiteSpace(search))
       query = query.Where(p => p.Name != null && p.Name.ToLower().Contains(search.ToLower()));
 
     if (categoryId.HasValue)
-      query = query.Where(p => p.CategoryId == categoryId);
+      query = query.Where(p => p.Categories.Any(c => c.Id == categoryId));
 
     query = sort switch
     {
       "price-asc"  => query.OrderBy(p => p.BasePrice * (1 - p.Discount / 100.0)),
       "price-desc" => query.OrderByDescending(p => p.BasePrice * (1 - p.Discount / 100.0)),
-      "newest"     => query.OrderByDescending(p => p.CreatedAt),
       _            => query.OrderByDescending(p => p.CreatedAt),
     };
 
@@ -34,7 +34,6 @@ public class ProductRepository(DatabaseContext context) : IProductRepository
 
     return new PagedResult<Product>(items, totalCount, page, pageSize);
   }
-
 
   public async Task<Product> CreateProductAsync(Product product)
   {
@@ -61,7 +60,7 @@ public class ProductRepository(DatabaseContext context) : IProductRepository
       .Include(p => p.Images)
       .Include(p => p.Variants)
       .Include(p => p.Reviews)
-      .Include(p => p.Category)
+      .Include(p => p.Categories)
       .Include(p => p.Seller).ThenInclude(s => s!.User)
       .FirstOrDefaultAsync(p => p.Id == productId);
   }
@@ -71,6 +70,7 @@ public class ProductRepository(DatabaseContext context) : IProductRepository
     return await context.Products
       .Include(p => p.Images.Where(i => i.IsPrimary == true))
       .Include(p => p.Variants)
+      .Include(p => p.Categories)
       .ToListAsync();
   }
 
@@ -79,7 +79,8 @@ public class ProductRepository(DatabaseContext context) : IProductRepository
     return await context.Products
       .Include(p => p.Images.Where(i => i.IsPrimary == true))
       .Include(p => p.Variants)
-      .Where(p => p.CategoryId == categoryId)
+      .Include(p => p.Categories)
+      .Where(p => p.Categories.Any(c => c.Id == categoryId))
       .ToListAsync();
   }
 
@@ -94,7 +95,6 @@ public class ProductRepository(DatabaseContext context) : IProductRepository
     existing.Discount = product.Discount;
     existing.Material = product.Material;
     existing.Status = product.Status;
-    existing.CategoryId = product.CategoryId;
     existing.UpdatedAt = DateTime.UtcNow;
 
     await context.SaveChangesAsync();

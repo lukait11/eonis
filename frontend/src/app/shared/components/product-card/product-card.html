@@ -23,7 +23,7 @@
   </div>
 
   <div class="card-body">
-    <p class="card-category">{{ product.category?.name ?? 'Uncategorized' }}</p>
+    <p class="card-category">{{ product.categories?.length ? product.categories[0].name : 'Uncategorized' }}</p>
     <h3 class="card-name">{{ product.name }}</h3>
     <div class="card-price">
       <span class="price-current">{{ price | number:'1.2-2' }} RSD</span>

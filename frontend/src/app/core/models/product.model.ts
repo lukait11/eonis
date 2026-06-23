@@ -21,7 +21,6 @@ export interface ProductImage {
 export interface Product {
   id: string;
   sellerId: string;
-  categoryId: string | null;
   name: string;
   description: string;
   basePrice: number;
@@ -31,7 +30,7 @@ export interface Product {
   createdAt: string;
   updatedAt: string;
   seller?: SellerProfile;
-  category?: Category;
+  categories?: Category[];
   variants?: ProductVariant[];
   images?: ProductImage[];
 }

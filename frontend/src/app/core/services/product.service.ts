@@ -39,7 +39,7 @@ export class ProductService {
 
   update(product: Product): Observable<Product> {
     const body = {
-      categoryId: product.categoryId,
+      categoryIds: (product.categories ?? []).map(c => c.id),
       name: product.name,
       description: product.description,
       basePrice: product.basePrice,

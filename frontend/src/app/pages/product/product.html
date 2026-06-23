@@ -29,7 +29,7 @@
     </div>
 
     <div class="product-info">
-      <p class="product-category">{{ product()!.category?.name ?? 'Uncategorized' }}</p>
+      <p class="product-category">{{ product()!.categories?.length ? product()!.categories!.map(c => c.name).join(' · ') : 'Uncategorized' }}</p>
       <h1 class="product-name">{{ product()!.name }}</h1>
 
       <div class="product-rating">

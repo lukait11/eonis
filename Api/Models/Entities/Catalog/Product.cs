@@ -7,7 +7,6 @@ public class Product
 {
   public Guid Id { get; set; }
   public Guid SellerId { get; set; }
-  public Guid? CategoryId { get; set; }
   public string? Name { get; set; }
   public string? Description { get; set; }
   public double BasePrice { get; set; }
@@ -19,7 +18,7 @@ public class Product
 
   // Navigation properties
   public SellerProfile? Seller { get; set; }
-  public Category? Category { get; set; }
+  public ICollection<Category> Categories { get; set; } = [];
   public ICollection<ProductVariant> Variants { get; set; } = [];
   public ICollection<ProductImage> Images { get; set; } = [];
   public ICollection<ProductReview> Reviews { get; set; } = [];

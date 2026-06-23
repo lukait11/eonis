@@ -81,19 +81,24 @@ public class ProductController(
   {
     try
     {
-      if (request.CategoryId.HasValue && await categoryRepository.GetCategoryByIdAsync(request.CategoryId.Value) == null)
-        return BadRequest("Category does not exist.");
+      var categories = new List<Category>();
+      foreach (var catId in request.CategoryIds)
+      {
+        var cat = await categoryRepository.GetCategoryByIdAsync(catId);
+        if (cat == null) return BadRequest($"Category {catId} does not exist.");
+        categories.Add(cat);
+      }
 
       var product = new Product
       {
         SellerId = request.SellerId,
-        CategoryId = request.CategoryId,
         Name = request.Name,
         Description = request.Description,
         BasePrice = request.BasePrice,
         Discount = request.Discount,
         Material = request.Material,
         Status = request.Status,
+        Categories = categories,
       };
 
       var created = await productRepository.CreateProductAsync(product);
@@ -110,19 +115,23 @@ public class ProductController(
   {
     try
     {
-      if (request.CategoryId.HasValue && await categoryRepository.GetCategoryByIdAsync(request.CategoryId.Value) == null)
-        return BadRequest("Category does not exist.");
-
       var existing = await productRepository.GetProductByIdAsync(productId);
       if (existing == null) return NotFound();
 
-      existing.CategoryId = request.CategoryId;
       existing.Name = request.Name;
       existing.Description = request.Description;
       existing.BasePrice = request.BasePrice;
       existing.Discount = request.Discount;
       existing.Material = request.Material;
       existing.Status = request.Status;
+
+      existing.Categories.Clear();
+      foreach (var catId in request.CategoryIds)
+      {
+        var cat = await categoryRepository.GetCategoryByIdAsync(catId);
+        if (cat == null) return BadRequest($"Category {catId} does not exist.");
+        existing.Categories.Add(cat);
+      }
 
       var updated = await productRepository.UpdateProductAsync(existing);
       return Ok(ProductResponse.From(updated!));

@@ -5,8 +5,6 @@ using Api.Models.Entities.Payments;
 using Api.Models.Entities.Reviews;
 using Api.Models.Entities.Shopping;
 using Api.Models.Entities.Wishlists;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Api.Context;
@@ -16,7 +14,6 @@ public class DatabaseContext(
   IConfiguration configuration
 ) : DbContext(options)
 {
-
   public DbSet<ApplicationUser> Users { get; set; }
   public DbSet<Category> Categories { get; set; }
   public DbSet<Product> Products { get; set; }
@@ -42,7 +39,6 @@ public class DatabaseContext(
       optionsBuilder.UseNpgsql(connectionString);
     }
   }
-
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
@@ -83,12 +79,14 @@ public class DatabaseContext(
       .HasForeignKey(p => p.SellerId)
       .OnDelete(DeleteBehavior.Cascade);
 
-    // Category (self-referencing)
-    modelBuilder.Entity<Category>()
-      .HasOne(c => c.ParentCategory)
-      .WithMany()
-      .HasForeignKey(c => c.ParentCategoryId)
-      .OnDelete(DeleteBehavior.SetNull);
+    // Product ↔ Category (many-to-many)
+    modelBuilder.Entity<Product>()
+      .HasMany(p => p.Categories)
+      .WithMany(c => c.Products)
+      .UsingEntity<Dictionary<string, object>>(
+        "ProductCategories",
+        r => r.HasOne<Category>().WithMany().HasForeignKey("CategoryId").OnDelete(DeleteBehavior.Cascade),
+        l => l.HasOne<Product>().WithMany().HasForeignKey("ProductId").OnDelete(DeleteBehavior.Cascade));
 
     // Wishlist → WishlistItems
     modelBuilder.Entity<WishlistItem>()

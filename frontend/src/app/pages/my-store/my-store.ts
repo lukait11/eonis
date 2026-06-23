@@ -44,7 +44,7 @@ export class MyStore implements OnInit {
     discount: [0, [Validators.min(0), Validators.max(100)]],
     material: [''],
     status: ['Available'],
-    categoryId: [null as string | null],
+    categoryIds: [[] as string[]],
   });
 
   variantForm = this.fb.group({
@@ -78,7 +78,7 @@ export class MyStore implements OnInit {
 
   openCreate(): void {
     this.editProduct.set(null);
-    this.form.reset({ status: 'Available', discount: 0, basePrice: 0, categoryId: null });
+    this.form.reset({ status: 'Available', discount: 0, basePrice: 0, categoryIds: [] });
     this.showForm.set(true);
   }
 
@@ -91,7 +91,7 @@ export class MyStore implements OnInit {
       discount: p.discount,
       material: p.material,
       status: p.status,
-      categoryId: p.categoryId,
+      categoryIds: (p.categories ?? []).map(c => c.id),
     });
     this.showForm.set(true);
   }
@@ -103,9 +103,10 @@ export class MyStore implements OnInit {
     this.saving.set(true);
     const val = this.form.getRawValue();
     const editing = this.editProduct();
+    const selectedCategories = this.categories().filter(c => (val.categoryIds ?? []).includes(c.id));
 
     if (editing) {
-      const updated: Product = { ...editing, ...val as any };
+      const updated: Product = { ...editing, ...val as any, categories: selectedCategories };
       this.productService.update(updated).subscribe({
         next: p => {
           this.products.update(list => list.map(x => x.id === p.id ? { ...p, variants: x.variants, images: x.images } : x));
@@ -115,7 +116,7 @@ export class MyStore implements OnInit {
         error: () => this.saving.set(false),
       });
     } else {
-      this.productService.create({ ...val as any, sellerId: this.seller()!.id }).subscribe({
+      this.productService.create({ ...val as any, sellerId: this.seller()!.id, categoryIds: val.categoryIds ?? [] }).subscribe({
         next: p => {
           this.products.update(list => [...list, p]);
           this.cancelForm();

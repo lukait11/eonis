@@ -5,7 +5,7 @@ namespace Api.Models.DTO.Catalog;
 public class CreateProductRequest
 {
   public Guid SellerId { get; set; }
-  public Guid? CategoryId { get; set; }
+  public List<Guid> CategoryIds { get; set; } = [];
   public string? Name { get; set; }
   public string? Description { get; set; }
   public double BasePrice { get; set; }

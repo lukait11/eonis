@@ -33,9 +33,13 @@
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 .form-field { display: flex; flex-direction: column; gap: 0.4rem; }
 .form-field label { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
-.form-field input, .form-field textarea, .form-field select { padding: 0.65rem 0.875rem; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-size: 0.875rem; outline: none; font-family: inherit; transition: border-color var(--transition); }
+.form-field input, .form-field textarea, .form-field select { padding: 0.65rem 0.875rem; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-size: 0.875rem; outline: none; font-family: inherit; transition: border-color var(--transition); width: 100%; box-sizing: border-box; }
 .form-field input:focus, .form-field textarea:focus, .form-field select:focus { border-color: var(--accent); }
 .form-field textarea { resize: vertical; }
+.form-hint { font-weight: 400; font-size: 0.7rem; color: var(--text-muted); letter-spacing: 0; text-transform: none; }
+.category-multiselect { min-height: 110px; padding: 0.25rem; }
+.category-multiselect option { padding: 0.4rem 0.6rem; border-radius: calc(var(--radius) - 2px); cursor: pointer; }
+.category-multiselect option:checked { background: var(--accent); color: #000; }
 .form-actions { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 0.5rem; }
 
 .empty-state { display: flex; flex-direction: column; align-items: center; gap: 1.25rem; padding: 5rem 0; color: var(--text-muted); }
