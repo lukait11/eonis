@@ -3,7 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { Product, ProductVariant } from '../models/product.model';
+import { Product, ProductVariant, ProductImage } from '../models/product.model';
 import { PagedResult } from '../models/paged-result.model';
 
 @Injectable({ providedIn: 'root' })
