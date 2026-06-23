@@ -130,7 +130,7 @@
                   [class.active]="expandedImagesProductId() === p.id"
                   (click)="toggleImages(p.id)"
                 >
-                  Images{{ p.images?.length ? ' (' + (productImages()[p.id]?.length ?? p.images!.length) + ')' : '' }}
+                  Images{{ productImages()[p.id]?.length ? ' (' + productImages()[p.id].length + ')' : '' }}
                 </button>
                 <button
                   class="btn-variants"
