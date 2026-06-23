@@ -28,6 +28,14 @@ export class OrderService {
     return this.http.get<OrderItem[]>(`${this.itemApi}/order/${orderId}`).pipe(map(r => r ?? []));
   }
 
+  create(body: Partial<Order>): Observable<Order> {
+    return this.http.post<Order>(this.api, body);
+  }
+
+  createItem(body: { orderId: string; productVariantId: string; quantity: number }): Observable<OrderItem> {
+    return this.http.post<OrderItem>(this.itemApi, body);
+  }
+
   updateStatus(order: Order): Observable<Order> {
     return this.http.put<Order>(this.api, order);
   }

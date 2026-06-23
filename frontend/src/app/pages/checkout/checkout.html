@@ -1,0 +1,153 @@
+@if (loading()) {
+  <div class="co-loading"><div class="spinner"></div></div>
+} @else if (itemViews().length === 0) {
+  <div class="co-empty">
+    <p>Your cart is empty.</p>
+    <a routerLink="/explore" class="btn-primary">Explore products</a>
+  </div>
+} @else if (phase() === 'success') {
+  <div class="co-success">
+    <div class="success-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+        <polyline points="22 4 12 14.01 9 11.01"/>
+      </svg>
+    </div>
+    <h1>Payment successful!</h1>
+    <p class="success-sub">Your order has been placed and is now being processed.</p>
+    @if (orderId()) {
+      <p class="order-ref">Order ID: <code>{{ orderId() }}</code></p>
+    }
+    <div class="success-actions">
+      <a routerLink="/profile" class="btn-primary">View my orders</a>
+      <a routerLink="/explore" class="btn-outline">Continue shopping</a>
+    </div>
+  </div>
+} @else {
+  <div class="co-page">
+    <div class="co-main">
+
+      <!-- Order items summary -->
+      <div class="co-card">
+        <h2 class="co-section-title">Your items</h2>
+        <div class="co-items">
+          @for (view of itemViews(); track view.item.id) {
+            <div class="co-item">
+              <div class="co-item-img">
+                @if (getImage(view.product)) {
+                  <img [src]="getImage(view.product)!" [alt]="view.product?.name" />
+                } @else {
+                  <div class="co-item-placeholder">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                  </div>
+                }
+              </div>
+              <div class="co-item-info">
+                <p class="co-item-name">{{ view.product?.name ?? 'Product' }}</p>
+                @if (view.item.productVariant) {
+                  <p class="co-item-variant">{{ view.item.productVariant.size }} / {{ view.item.productVariant.color }}</p>
+                }
+                <p class="co-item-qty">Qty: {{ view.item.quantity }}</p>
+              </div>
+              <p class="co-item-price">
+                {{ (view.product?.basePrice ?? 0) * (1 - (view.product?.discount ?? 0) / 100) * view.item.quantity | number:'1.2-2' }} RSD
+              </p>
+            </div>
+          }
+        </div>
+        <div class="co-total-row">
+          <span>Total</span>
+          <span class="co-total-amount">{{ total() | number:'1.2-2' }} RSD</span>
+        </div>
+      </div>
+
+      <!-- Address step -->
+      @if (phase() === 'address') {
+        <div class="co-card">
+          <h2 class="co-section-title">Delivery address</h2>
+
+          @if (addresses().length > 0) {
+            <div class="address-list">
+              @for (addr of addresses(); track addr.id) {
+                <label class="address-option" [class.selected]="selectedAddressId() === addr.id">
+                  <input type="radio" name="address" [value]="addr.id" [checked]="selectedAddressId() === addr.id" (change)="selectAddress(addr.id)" />
+                  <div class="address-text">
+                    <span class="addr-line">{{ addr.street }}</span>
+                    <span class="addr-line">{{ addr.city }}, {{ addr.country }} {{ addr.postalCode }}</span>
+                  </div>
+                </label>
+              }
+            </div>
+          }
+
+          @if (!showAddressForm()) {
+            <button class="btn-add-address" (click)="showAddressForm.set(true)">+ Add new address</button>
+          } @else {
+            <form [formGroup]="addressForm" (ngSubmit)="saveAddress()" class="address-form">
+              <div class="addr-form-row">
+                <div class="form-field">
+                  <label>Country *</label>
+                  <input formControlName="country" placeholder="e.g. Serbia" />
+                </div>
+                <div class="form-field">
+                  <label>City *</label>
+                  <input formControlName="city" placeholder="e.g. Belgrade" />
+                </div>
+              </div>
+              <div class="addr-form-row">
+                <div class="form-field">
+                  <label>Street *</label>
+                  <input formControlName="street" placeholder="e.g. Knez Mihailova 5" />
+                </div>
+                <div class="form-field">
+                  <label>Postal code *</label>
+                  <input type="number" formControlName="postalCode" placeholder="e.g. 11000" />
+                </div>
+              </div>
+              <div class="addr-form-actions">
+                <button type="submit" class="btn-primary" [disabled]="addressForm.invalid">Save address</button>
+                <button type="button" class="btn-outline" (click)="showAddressForm.set(false)">Cancel</button>
+              </div>
+            </form>
+          }
+
+          @if (errorMessage()) {
+            <p class="co-error">{{ errorMessage() }}</p>
+          }
+
+          <button
+            class="btn-primary btn-continue"
+            [disabled]="!selectedAddressId() || processing()"
+            (click)="continueToPayment()"
+          >
+            {{ processing() ? 'Preparing payment…' : 'Continue to payment →' }}
+          </button>
+        </div>
+      }
+
+      <!-- Payment step -->
+      @if (phase() === 'payment') {
+        <div class="co-card">
+          <h2 class="co-section-title">Payment</h2>
+          <p class="co-payment-hint">Test card: <code>4242 4242 4242 4242</code> · any future date · any CVC</p>
+          <div id="payment-element" class="stripe-element"></div>
+
+          @if (errorMessage()) {
+            <p class="co-error">{{ errorMessage() }}</p>
+          }
+
+          <button
+            class="btn-primary btn-pay"
+            [disabled]="processing()"
+            (click)="pay()"
+          >
+            {{ processing() ? 'Processing…' : 'Pay ' + (total() | number:'1.2-2') + ' RSD' }}
+          </button>
+        </div>
+      }
+
+    </div>
+  </div>
+}

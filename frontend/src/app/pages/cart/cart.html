@@ -75,9 +75,7 @@
           <span>Total</span>
           <span>{{ total() | number:'1.2-2' }} RSD</span>
         </div>
-        <button class="btn-checkout" disabled>
-          Checkout — Coming soon
-        </button>
+        <a routerLink="/checkout" class="btn-checkout">Checkout</a>
         <a routerLink="/explore" class="continue-link">← Continue shopping</a>
       </aside>
     </div>
