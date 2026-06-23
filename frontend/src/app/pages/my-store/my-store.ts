@@ -6,7 +6,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { SellerProfileService } from '../../core/services/seller-profile.service';
 import { ProductService } from '../../core/services/product.service';
 import { CategoryService } from '../../core/services/category.service';
-import { Product, primaryImage, effectivePrice } from '../../core/models/product.model';
+import { Product, ProductVariant, primaryImage, effectivePrice } from '../../core/models/product.model';
 import { Category } from '../../core/models/category.model';
 import { SellerProfile } from '../../core/models/seller-profile.model';
 
@@ -35,6 +35,7 @@ export class MyStore implements OnInit {
 
   expandedProductId = signal<string | null>(null);
   savingVariant = signal(false);
+  editingVariantId = signal<string | null>(null);
 
   form = this.fb.group({
     name: ['', Validators.required],
@@ -47,6 +48,12 @@ export class MyStore implements OnInit {
   });
 
   variantForm = this.fb.group({
+    size: ['', Validators.required],
+    color: ['', Validators.required],
+    quantity: [1, [Validators.required, Validators.min(0)]],
+  });
+
+  editVariantForm = this.fb.group({
     size: ['', Validators.required],
     color: ['', Validators.required],
     quantity: [1, [Validators.required, Validators.min(0)]],
@@ -150,10 +157,40 @@ export class MyStore implements OnInit {
   toggleVariants(productId: string): void {
     if (this.expandedProductId() === productId) {
       this.expandedProductId.set(null);
+      this.editingVariantId.set(null);
     } else {
       this.expandedProductId.set(productId);
       this.variantForm.reset({ quantity: 1 });
+      this.editingVariantId.set(null);
     }
+  }
+
+  openEditVariant(v: ProductVariant): void {
+    this.editingVariantId.set(v.id);
+    this.editVariantForm.setValue({ size: v.size, color: v.color, quantity: v.quantity });
+  }
+
+  cancelEditVariant(): void {
+    this.editingVariantId.set(null);
+  }
+
+  saveVariant(v: ProductVariant, productId: string): void {
+    if (this.editVariantForm.invalid) return;
+    this.savingVariant.set(true);
+    const val = this.editVariantForm.getRawValue();
+    const updated: ProductVariant = { ...v, size: val.size!, color: val.color!, quantity: val.quantity! };
+    this.productService.updateVariant(updated).subscribe({
+      next: saved => {
+        this.products.update(list => list.map(p =>
+          p.id === productId
+            ? { ...p, variants: (p.variants ?? []).map(x => x.id === saved.id ? saved : x) }
+            : p
+        ));
+        this.editingVariantId.set(null);
+        this.savingVariant.set(false);
+      },
+      error: () => this.savingVariant.set(false),
+    });
   }
 
   addVariant(productId: string): void {

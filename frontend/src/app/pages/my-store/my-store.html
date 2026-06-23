@@ -148,12 +148,25 @@
                 } @else {
                   <div class="variants-list">
                     @for (v of p.variants!; track v.id) {
-                      <div class="variant-row">
-                        <span class="variant-badge">{{ v.size }}</span>
-                        <span class="variant-badge">{{ v.color }}</span>
-                        <span class="variant-qty">qty {{ v.quantity }}</span>
-                        <button class="btn-variant-del" (click)="deleteVariant(v.id, p.id)" title="Delete variant">×</button>
-                      </div>
+                      @if (editingVariantId() === v.id) {
+                        <form [formGroup]="editVariantForm" (ngSubmit)="saveVariant(v, p.id)" class="variant-edit-row">
+                          <input formControlName="size" placeholder="Size" class="variant-edit-input" />
+                          <input formControlName="color" placeholder="Color" class="variant-edit-input" />
+                          <input type="number" formControlName="quantity" min="0" placeholder="Qty" class="variant-edit-input variant-edit-qty" />
+                          <button type="submit" class="btn-variant-save" [disabled]="editVariantForm.invalid || savingVariant()">
+                            {{ savingVariant() ? '…' : 'Save' }}
+                          </button>
+                          <button type="button" class="btn-variant-cancel" (click)="cancelEditVariant()">Cancel</button>
+                        </form>
+                      } @else {
+                        <div class="variant-row">
+                          <span class="variant-badge">{{ v.size }}</span>
+                          <span class="variant-badge">{{ v.color }}</span>
+                          <span class="variant-qty">qty {{ v.quantity }}</span>
+                          <button class="btn-variant-edit" (click)="openEditVariant(v)" title="Edit variant">✎</button>
+                          <button class="btn-variant-del" (click)="deleteVariant(v.id, p.id)" title="Delete variant">×</button>
+                        </div>
+                      }
                     }
                   </div>
                 }
