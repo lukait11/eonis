@@ -8,7 +8,7 @@ namespace Api.Data.Implementations.Catalog;
 
 public class ProductRepository(DatabaseContext context) : IProductRepository
 {
-  public async Task<PagedResult<Product>> GetProductsPagedAsync(int page, int pageSize, string? search, Guid? categoryId, string? sort)
+  public async Task<PagedResult<Product>> GetProductsPagedAsync(int page, int pageSize, string? search, List<Guid>? categoryIds, string? sort)
   {
     var query = context.Products
       .Include(p => p.Images.Where(i => i.IsPrimary == true))
@@ -19,8 +19,8 @@ public class ProductRepository(DatabaseContext context) : IProductRepository
     if (!string.IsNullOrWhiteSpace(search))
       query = query.Where(p => p.Name != null && p.Name.ToLower().Contains(search.ToLower()));
 
-    if (categoryId.HasValue)
-      query = query.Where(p => p.Categories.Any(c => c.Id == categoryId));
+    if (categoryIds?.Count > 0)
+      query = query.Where(p => p.Categories.Any(c => categoryIds.Contains(c.Id)));
 
     query = sort switch
     {

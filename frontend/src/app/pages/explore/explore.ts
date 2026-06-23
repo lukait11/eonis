@@ -28,7 +28,7 @@ export class Explore implements OnInit {
   readonly pageSize = 12;
   page = signal(1);
   search = signal('');
-  selectedCategory = signal('');
+  selectedCategories = signal<string[]>([]);
   sort = signal<SortOption>('default');
 
   totalPages = computed(() => Math.ceil(this.totalCount() / this.pageSize));
@@ -54,7 +54,7 @@ export class Explore implements OnInit {
     this.categoryService.getAll().subscribe(cats => this.categories.set(cats));
 
     this.route.queryParams.subscribe(params => {
-      if (params['category']) this.selectedCategory.set(params['category']);
+      if (params['category']) this.selectedCategories.set([params['category']]);
       this.load();
     });
   }
@@ -65,7 +65,7 @@ export class Explore implements OnInit {
       this.page(),
       this.pageSize,
       this.search() || undefined,
-      this.selectedCategory() || undefined,
+      this.selectedCategories().length ? this.selectedCategories() : undefined,
       this.sort(),
     ).subscribe({
       next: result => {
@@ -83,10 +83,17 @@ export class Explore implements OnInit {
     this._searchDebounce = setTimeout(() => { this.page.set(1); this.load(); }, 300);
   }
 
-  onCategory(value: string): void {
-    this.selectedCategory.set(value);
+  toggleCategory(id: string): void {
+    const current = this.selectedCategories();
+    this.selectedCategories.set(
+      current.includes(id) ? current.filter(c => c !== id) : [...current, id]
+    );
     this.page.set(1);
     this.load();
+  }
+
+  isCategorySelected(id: string): boolean {
+    return this.selectedCategories().includes(id);
   }
 
   onSort(value: string): void {
@@ -103,7 +110,7 @@ export class Explore implements OnInit {
 
   clearFilters(): void {
     this.search.set('');
-    this.selectedCategory.set('');
+    this.selectedCategories.set([]);
     this.sort.set('default');
     this.page.set(1);
     this.load();

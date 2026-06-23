@@ -28,12 +28,12 @@ public class ProductController(
     [FromQuery] int page = 1,
     [FromQuery] int pageSize = 12,
     [FromQuery] string? search = null,
-    [FromQuery] Guid? categoryId = null,
+    [FromQuery] List<Guid>? categoryIds = null,
     [FromQuery] string? sort = null)
   {
     try
     {
-      var result = await productRepository.GetProductsPagedAsync(page, pageSize, search, categoryId, sort);
+      var result = await productRepository.GetProductsPagedAsync(page, pageSize, search, categoryIds, sort);
       var response = new PagedResult<ProductResponse>(
         result.Items.Select(ProductResponse.From),
         result.TotalCount,

@@ -13,10 +13,10 @@ export class ProductService {
 
   constructor(private http: HttpClient) {}
 
-  getPaged(page: number, pageSize: number, search?: string, categoryId?: string, sort?: string): Observable<PagedResult<Product>> {
+  getPaged(page: number, pageSize: number, search?: string, categoryIds?: string[], sort?: string): Observable<PagedResult<Product>> {
     let params = new HttpParams().set('page', page).set('pageSize', pageSize);
     if (search) params = params.set('search', search);
-    if (categoryId) params = params.set('categoryId', categoryId);
+    for (const id of categoryIds ?? []) params = params.append('categoryIds', id);
     if (sort && sort !== 'default') params = params.set('sort', sort);
     return this.http.get<PagedResult<Product>>(this.api, { params });
   }

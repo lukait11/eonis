@@ -17,13 +17,21 @@
     </div>
 
     <div class="filter-group">
-      <label class="filter-label">Category</label>
-      <select class="filter-select" [value]="selectedCategory()" (change)="onCategory($any($event.target).value)">
-        <option value="">All categories</option>
-        @for (cat of categories(); track cat.id) {
-          <option [value]="cat.id">{{ cat.name }}</option>
+      <label class="filter-label">
+        Category
+        @if (selectedCategories().length) {
+          <span class="filter-count">{{ selectedCategories().length }}</span>
         }
-      </select>
+      </label>
+      <div class="category-chips">
+        @for (cat of categories(); track cat.id) {
+          <button
+            class="category-chip"
+            [class.active]="isCategorySelected(cat.id)"
+            (click)="toggleCategory(cat.id)"
+          >{{ cat.name }}</button>
+        }
+      </div>
     </div>
 
     <div class="filter-group">
