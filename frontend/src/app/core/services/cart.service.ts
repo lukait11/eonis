@@ -44,7 +44,8 @@ export class CartService {
   }
 
   updateItem(item: CartItem): Observable<CartItem> {
-    return this.http.put<CartItem>(this.itemApi, item).pipe(
+    const body = { cartId: item.cartId, productVariantId: item.productVariantId, quantity: item.quantity };
+    return this.http.put<CartItem>(`${this.itemApi}/${item.id}`, body).pipe(
       tap(() => {
         const cart = this._cart();
         if (cart) this.loadCart(cart.userId).subscribe();

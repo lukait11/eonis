@@ -1,5 +1,7 @@
+using Api.Contracts.Reviews;
 using Api.Data.Interfaces.Identity;
 using Api.Data.Interfaces.Reviews;
+using Api.Models.DTO.Reviews;
 using Api.Models.Entities.Reviews;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,9 +21,7 @@ public class SellerReviewController(
     try
     {
       var reviews = await sellerReviewRepository.GetSellerReviewsByUserIdAsync(userId);
-      if (reviews == null || !reviews.Any())
-        return NoContent();
-      return Ok(reviews);
+      return Ok(reviews.Select(SellerReviewResponse.From));
     }
     catch (Exception ex)
     {
@@ -35,9 +35,7 @@ public class SellerReviewController(
     try
     {
       var reviews = await sellerReviewRepository.GetSellerReviewsBySellerIdAsync(sellerId);
-      if (reviews == null || !reviews.Any())
-        return NoContent();
-      return Ok(reviews);
+      return Ok(reviews.Select(SellerReviewResponse.From));
     }
     catch (Exception ex)
     {
@@ -51,9 +49,8 @@ public class SellerReviewController(
     try
     {
       var review = await sellerReviewRepository.GetSellerReviewByIdAsync(reviewId);
-      if (review == null)
-        return NoContent();
-      return Ok(review);
+      if (review == null) return NotFound();
+      return Ok(SellerReviewResponse.From(review));
     }
     catch (Exception ex)
     {
@@ -62,16 +59,25 @@ public class SellerReviewController(
   }
 
   [HttpPost]
-  public async Task<IActionResult> Create(SellerReview sellerReview)
+  public async Task<IActionResult> Create(CreateSellerReviewRequest request)
   {
     try
     {
-      if (await sellerProfileRepository.GetSellerProfileByIdAsync(sellerReview.SellerProfileId) == null)
-        return NotFound($"Seller profile with ID {sellerReview.SellerProfileId} not found.");
-      if (await applicationUserRepository.GetUserByIdAsync(sellerReview.UserId) == null)
-        return NotFound($"User with ID {sellerReview.UserId} not found.");
-      var createdReview = await sellerReviewRepository.CreateSellerReviewAsync(sellerReview);
-      return CreatedAtAction(nameof(GetById), new { reviewId = createdReview.Id }, createdReview);
+      if (await sellerProfileRepository.GetSellerProfileByIdAsync(request.SellerProfileId) == null)
+        return NotFound($"Seller profile with ID {request.SellerProfileId} not found.");
+      if (await applicationUserRepository.GetUserByIdAsync(request.UserId) == null)
+        return NotFound($"User with ID {request.UserId} not found.");
+
+      var review = new SellerReview
+      {
+        SellerProfileId = request.SellerProfileId,
+        UserId = request.UserId,
+        Rating = request.Rating,
+        Comment = request.Comment,
+      };
+
+      var created = await sellerReviewRepository.CreateSellerReviewAsync(review);
+      return CreatedAtAction(nameof(GetById), new { reviewId = created.Id }, SellerReviewResponse.From(created));
     }
     catch (Exception ex)
     {
@@ -85,8 +91,7 @@ public class SellerReviewController(
     try
     {
       var deleted = await sellerReviewRepository.DeleteSellerReviewAsync(reviewId);
-      if (!deleted)
-        return NotFound();
+      if (!deleted) return NotFound();
       return Ok();
     }
     catch (Exception ex)

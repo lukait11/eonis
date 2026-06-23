@@ -1,4 +1,6 @@
+using Api.Contracts.Catalog;
 using Api.Data.Interfaces.Catalog;
+using Api.Models.DTO.Catalog;
 using Api.Models.Entities.Catalog;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,10 +18,9 @@ public class ProductVariantController(
   {
     try
     {
-      var productVariant = await productVariantRepository.GetProductVariantByIdAsync(productVariantId);
-      if (productVariant == null)
-        return NoContent();
-      return Ok(productVariant);
+      var variant = await productVariantRepository.GetProductVariantByIdAsync(productVariantId);
+      if (variant == null) return NotFound();
+      return Ok(ProductVariantResponse.From(variant));
     }
     catch (Exception ex)
     {
@@ -32,10 +33,8 @@ public class ProductVariantController(
   {
     try
     {
-      var productVariants = await productVariantRepository.GetProductVariantsByProductIdAsync(productId);
-      if (productVariants == null || !productVariants.Any())
-        return NoContent();
-      return Ok(productVariants);
+      var variants = await productVariantRepository.GetProductVariantsByProductIdAsync(productId);
+      return Ok(variants.Select(ProductVariantResponse.From));
     }
     catch (Exception ex)
     {
@@ -44,14 +43,23 @@ public class ProductVariantController(
   }
 
   [HttpPost]
-  public async Task<IActionResult> Create(ProductVariant productVariant)
+  public async Task<IActionResult> Create(CreateProductVariantRequest request)
   {
     try
     {
-      if (await productRepository.GetProductByIdAsync(productVariant.ProductId) == null)
+      if (await productRepository.GetProductByIdAsync(request.ProductId) == null)
         return BadRequest("Product does not exist.");
-      var createdProductVariant = await productVariantRepository.CreateProductVariantAsync(productVariant);
-      return CreatedAtAction(nameof(GetById), new { productVariantId = createdProductVariant.Id }, createdProductVariant);
+
+      var variant = new ProductVariant
+      {
+        ProductId = request.ProductId,
+        Size = request.Size,
+        Color = request.Color,
+        Quantity = request.Quantity,
+      };
+
+      var created = await productVariantRepository.CreateProductVariantAsync(variant);
+      return CreatedAtAction(nameof(GetById), new { productVariantId = created.Id }, ProductVariantResponse.From(created));
     }
     catch (Exception ex)
     {
@@ -59,19 +67,23 @@ public class ProductVariantController(
     }
   }
 
-  [HttpPut]
-  public async Task<IActionResult> Update(ProductVariant productVariant)
+  [HttpPut("{productVariantId:guid}")]
+  public async Task<IActionResult> Update(Guid productVariantId, UpdateProductVariantRequest request)
   {
     try
     {
-      if (productVariant.Id == Guid.Empty)
-        return BadRequest();
-      if (await productRepository.GetProductByIdAsync(productVariant.ProductId) == null)
+      if (await productRepository.GetProductByIdAsync(request.ProductId) == null)
         return BadRequest("Product does not exist.");
-      var updatedProductVariant = await productVariantRepository.UpdateProductVariantAsync(productVariant);
-      if (updatedProductVariant == null)
-        return NotFound();
-      return Ok(updatedProductVariant);
+
+      var existing = await productVariantRepository.GetProductVariantByIdAsync(productVariantId);
+      if (existing == null) return NotFound();
+
+      existing.Size = request.Size;
+      existing.Color = request.Color;
+      existing.Quantity = request.Quantity;
+
+      var updated = await productVariantRepository.UpdateProductVariantAsync(existing);
+      return Ok(ProductVariantResponse.From(updated!));
     }
     catch (Exception ex)
     {
@@ -85,8 +97,7 @@ public class ProductVariantController(
     try
     {
       var deleted = await productVariantRepository.DeleteProductVariantAsync(productVariantId);
-      if (!deleted)
-        return NotFound();
+      if (!deleted) return NotFound();
       return Ok();
     }
     catch (Exception ex)

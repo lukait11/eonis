@@ -1,6 +1,9 @@
 using System.Security.Claims;
+using Api.Contracts.Catalog;
 using Api.Data.Interfaces.Catalog;
 using Api.Data.Interfaces.Identity;
+using Api.Models;
+using Api.Models.DTO.Catalog;
 using Api.Models.Entities.Catalog;
 using Api.Models.Entities.Identity;
 using Api.Services;
@@ -31,7 +34,12 @@ public class ProductController(
     try
     {
       var result = await productRepository.GetProductsPagedAsync(page, pageSize, search, categoryId, sort);
-      return Ok(result);
+      var response = new PagedResult<ProductResponse>(
+        result.Items.Select(ProductResponse.From),
+        result.TotalCount,
+        result.Page,
+        result.PageSize);
+      return Ok(response);
     }
     catch (Exception ex)
     {
@@ -45,9 +53,8 @@ public class ProductController(
     try
     {
       var product = await productRepository.GetProductByIdAsync(productId);
-      if (product == null)
-        return NoContent();
-      return Ok(product);
+      if (product == null) return NotFound();
+      return Ok(ProductResponse.From(product));
     }
     catch (Exception ex)
     {
@@ -61,9 +68,7 @@ public class ProductController(
     try
     {
       var products = await productRepository.GetProductsByCategoryIdAsync(categoryId);
-      if (products == null || !products.Any())
-        return NoContent();
-      return Ok(products);
+      return Ok(products.Select(ProductResponse.From));
     }
     catch (Exception ex)
     {
@@ -72,18 +77,27 @@ public class ProductController(
   }
 
   [HttpPost]
-  public async Task<IActionResult> Create(Product product)
+  public async Task<IActionResult> Create(CreateProductRequest request)
   {
     try
     {
-      if (product.CategoryId.HasValue)
+      if (request.CategoryId.HasValue && await categoryRepository.GetCategoryByIdAsync(request.CategoryId.Value) == null)
+        return BadRequest("Category does not exist.");
+
+      var product = new Product
       {
-        var category = await categoryRepository.GetCategoryByIdAsync(product.CategoryId.Value);
-        if (category == null)
-          return BadRequest("Category does not exist.");
-      }
-      var createdProduct = await productRepository.CreateProductAsync(product);
-      return CreatedAtAction(nameof(GetById), new { productId = createdProduct.Id }, createdProduct);
+        SellerId = request.SellerId,
+        CategoryId = request.CategoryId,
+        Name = request.Name,
+        Description = request.Description,
+        BasePrice = request.BasePrice,
+        Discount = request.Discount,
+        Material = request.Material,
+        Status = request.Status,
+      };
+
+      var created = await productRepository.CreateProductAsync(product);
+      return CreatedAtAction(nameof(GetById), new { productId = created.Id }, ProductResponse.From(created));
     }
     catch (Exception ex)
     {
@@ -91,23 +105,27 @@ public class ProductController(
     }
   }
 
-  [HttpPut]
-  public async Task<IActionResult> Update(Product product)
+  [HttpPut("{productId:guid}")]
+  public async Task<IActionResult> Update(Guid productId, UpdateProductRequest request)
   {
     try
     {
-      if (product.Id == Guid.Empty)
-        return BadRequest();
-      if (product.CategoryId.HasValue)
-      {
-        var category = await categoryRepository.GetCategoryByIdAsync(product.CategoryId.Value);
-        if (category == null)
-          return BadRequest("Category does not exist.");
-      }
-      var updatedProduct = await productRepository.UpdateProductAsync(product);
-      if (updatedProduct == null)
-        return NotFound();
-      return Ok(updatedProduct);
+      if (request.CategoryId.HasValue && await categoryRepository.GetCategoryByIdAsync(request.CategoryId.Value) == null)
+        return BadRequest("Category does not exist.");
+
+      var existing = await productRepository.GetProductByIdAsync(productId);
+      if (existing == null) return NotFound();
+
+      existing.CategoryId = request.CategoryId;
+      existing.Name = request.Name;
+      existing.Description = request.Description;
+      existing.BasePrice = request.BasePrice;
+      existing.Discount = request.Discount;
+      existing.Material = request.Material;
+      existing.Status = request.Status;
+
+      var updated = await productRepository.UpdateProductAsync(existing);
+      return Ok(ProductResponse.From(updated!));
     }
     catch (Exception ex)
     {
@@ -121,8 +139,7 @@ public class ProductController(
     try
     {
       var deleted = await productRepository.DeleteProductAsync(productId);
-      if (!deleted)
-        return NotFound();
+      if (!deleted) return NotFound();
       return Ok();
     }
     catch (Exception ex)
@@ -142,8 +159,8 @@ public class ProductController(
       if (file is null || file.Length == 0)
         return BadRequest("No file provided.");
 
-      if (await productRepository.GetProductByIdAsync(productId) == null)
-        return BadRequest("Product does not exist.");
+      var product = await productRepository.GetProductByIdAsync(productId);
+      if (product == null) return NotFound("Product does not exist.");
 
       var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
       var user = await applicationUserRepository.GetUserByIdAsync(userId);
@@ -151,10 +168,6 @@ public class ProductController(
 
       if (user.Role != UserRole.Seller && user.Role != UserRole.Admin)
         return Forbid();
-
-      var product = await productRepository.GetProductByIdAsync(productId);
-      if (product == null)
-        return NotFound();
 
       var sellerProfile = await sellerProfileRepository.GetSellerProfileByIdAsync(product.SellerId);
       if (sellerProfile == null || sellerProfile.UserId != userId)
@@ -166,19 +179,19 @@ public class ProductController(
         await using var stream = file.OpenReadStream();
         var key = await imageService.ProcessAndUploadAsync(stream, file.ContentType, productId, ct);
         proxyUrl = $"{Request.Scheme}://{Request.Host}/api/image/{key}";
-        ProductImage newImage = new()
+        var newImage = new ProductImage
         {
           ProductId = productId,
           ImageUrl = proxyUrl,
           IsPrimary = !product.Images.Any()
         };
-
         await productImageRepository.CreateProductImageAsync(newImage);
       }
       catch (ImageValidationException ex)
       {
         return BadRequest(ex.Message);
       }
+
       return Ok(proxyUrl);
     }
     catch (Exception ex)

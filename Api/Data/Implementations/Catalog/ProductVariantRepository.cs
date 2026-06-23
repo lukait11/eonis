@@ -36,7 +36,13 @@ public class ProductVariantRepository(DatabaseContext context) : IProductVariant
 
   public async Task<ProductVariant?> UpdateProductVariantAsync(ProductVariant productVariant)
   {
-    throw new NotImplementedException();
+    var existing = await context.ProductVariants.FindAsync(productVariant.Id);
+    if (existing == null) return null;
+    existing.Size = productVariant.Size;
+    existing.Color = productVariant.Color;
+    existing.Quantity = productVariant.Quantity;
+    await context.SaveChangesAsync();
+    return existing;
   }
 
 }

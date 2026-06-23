@@ -1,5 +1,7 @@
+using Api.Contracts.Orders;
 using Api.Data.Interfaces.Identity;
 using Api.Data.Interfaces.Orders;
+using Api.Models.DTO.Orders;
 using Api.Models.Entities.Orders;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,9 +22,7 @@ public class OrderController(
     try
     {
       var orders = await orderRepository.GetOrdersAsync();
-      if (orders == null || !orders.Any())
-        return NoContent();
-      return Ok(orders);
+      return Ok(orders.Select(OrderResponse.From));
     }
     catch (Exception ex)
     {
@@ -36,9 +36,8 @@ public class OrderController(
     try
     {
       var order = await orderRepository.GetOrderByIdAsync(orderId);
-      if (order == null)
-        return NoContent();
-      return Ok(order);
+      if (order == null) return NotFound();
+      return Ok(OrderResponse.From(order));
     }
     catch (Exception ex)
     {
@@ -52,9 +51,7 @@ public class OrderController(
     try
     {
       var orders = await orderRepository.GetOrdersByUserIdAsync(userId);
-      if (orders == null || !orders.Any())
-        return NoContent();
-      return Ok(orders);
+      return Ok(orders.Select(OrderResponse.From));
     }
     catch (Exception ex)
     {
@@ -68,9 +65,7 @@ public class OrderController(
     try
     {
       var orders = await orderRepository.GetOrdersBySellerIdAsync(sellerId);
-      if (orders == null || !orders.Any())
-        return NoContent();
-      return Ok(orders);
+      return Ok(orders.Select(OrderResponse.From));
     }
     catch (Exception ex)
     {
@@ -84,9 +79,7 @@ public class OrderController(
     try
     {
       var orders = await orderRepository.GetOrdersByStatusAsync(status);
-      if (orders == null || !orders.Any())
-        return NoContent();
-      return Ok(orders);
+      return Ok(orders.Select(OrderResponse.From));
     }
     catch (Exception ex)
     {
@@ -95,18 +88,29 @@ public class OrderController(
   }
 
   [HttpPost]
-  public async Task<IActionResult> Create(Order order)
+  public async Task<IActionResult> Create(CreateOrderRequest request)
   {
     try
     {
-      if (await applicationUserRepository.GetUserByIdAsync(order.UserId) == null)
+      if (await applicationUserRepository.GetUserByIdAsync(request.UserId) == null)
         return BadRequest("User does not exist.");
-      if (await sellerProfileRepository.GetSellerProfileByIdAsync(order.SellerProfileId) == null)
+      if (await sellerProfileRepository.GetSellerProfileByIdAsync(request.SellerProfileId) == null)
         return BadRequest("Seller profile does not exist.");
-      if (await addressRepository.GetAddressByIdAsync(order.AddressId) == null)
+      if (await addressRepository.GetAddressByIdAsync(request.AddressId) == null)
         return BadRequest("Address does not exist.");
-      var createdOrder = await orderRepository.CreateOrderAsync(order);
-      return CreatedAtAction(nameof(GetById), new { orderId = createdOrder.Id }, createdOrder);
+
+      var order = new Order
+      {
+        UserId = request.UserId,
+        SellerProfileId = request.SellerProfileId,
+        AddressId = request.AddressId,
+        BaseAmount = request.BaseAmount,
+        Discount = request.Discount,
+        Status = request.Status,
+      };
+
+      var created = await orderRepository.CreateOrderAsync(order);
+      return CreatedAtAction(nameof(GetById), new { orderId = created.Id }, OrderResponse.From(created));
     }
     catch (Exception ex)
     {
@@ -114,23 +118,18 @@ public class OrderController(
     }
   }
 
-  [HttpPut]
-  public async Task<IActionResult> Update(Order order)
+  [HttpPut("{orderId:guid}/status")]
+  public async Task<IActionResult> UpdateStatus(Guid orderId, UpdateOrderStatusRequest request)
   {
     try
     {
-      if (order.Id == Guid.Empty)
-        return BadRequest();
-      if (await applicationUserRepository.GetUserByIdAsync(order.UserId) == null)
-        return BadRequest("User does not exist.");
-      if (await sellerProfileRepository.GetSellerProfileByIdAsync(order.SellerProfileId) == null)
-        return BadRequest("Seller profile does not exist.");
-      if (await addressRepository.GetAddressByIdAsync(order.AddressId) == null)
-        return BadRequest("Address does not exist.");
-      var updatedOrder = await orderRepository.UpdateOrderAsync(order);
-      if (updatedOrder == null)
-        return NotFound();
-      return Ok(updatedOrder);
+      var existing = await orderRepository.GetOrderByIdAsync(orderId);
+      if (existing == null) return NotFound();
+
+      existing.Status = request.Status;
+
+      var updated = await orderRepository.UpdateOrderAsync(existing);
+      return Ok(OrderResponse.From(updated!));
     }
     catch (Exception ex)
     {
@@ -144,8 +143,7 @@ public class OrderController(
     try
     {
       var deleted = await orderRepository.DeleteOrderAsync(orderId);
-      if (!deleted)
-        return NotFound();
+      if (!deleted) return NotFound();
       return Ok();
     }
     catch (Exception ex)

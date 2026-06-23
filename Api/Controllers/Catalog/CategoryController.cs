@@ -1,4 +1,6 @@
+using Api.Contracts.Catalog;
 using Api.Data.Interfaces.Catalog;
+using Api.Models.DTO.Catalog;
 using Api.Models.Entities.Catalog;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,9 +16,7 @@ public class CategoryController(ICategoryRepository categoryRepository) : Contro
     try
     {
       var categories = await categoryRepository.GetCategoriesAsync();
-      if (categories == null || !categories.Any())
-        return NoContent();
-      return Ok(categories);
+      return Ok(categories.Select(CategoryResponse.From));
     }
     catch (Exception ex)
     {
@@ -30,9 +30,8 @@ public class CategoryController(ICategoryRepository categoryRepository) : Contro
     try
     {
       var category = await categoryRepository.GetCategoryByIdAsync(categoryId);
-      if (category == null)
-        return NoContent();
-      return Ok(category);
+      if (category == null) return NotFound();
+      return Ok(CategoryResponse.From(category));
     }
     catch (Exception ex)
     {
@@ -41,18 +40,25 @@ public class CategoryController(ICategoryRepository categoryRepository) : Contro
   }
 
   [HttpPost]
-  public async Task<IActionResult> Create(Category category)
+  public async Task<IActionResult> Create(CreateCategoryRequest request)
   {
     try
     {
-      if (category.ParentCategoryId.HasValue)
+      if (request.ParentCategoryId.HasValue)
       {
-        var parentCategory = await categoryRepository.GetCategoryByIdAsync(category.ParentCategoryId.Value);
-        if (parentCategory == null)
-          return BadRequest("Parent category does not exist.");
+        var parent = await categoryRepository.GetCategoryByIdAsync(request.ParentCategoryId.Value);
+        if (parent == null) return BadRequest("Parent category does not exist.");
       }
-      var createdCategory = await categoryRepository.CreateCategoryAsync(category);
-      return CreatedAtAction(nameof(GetById), new { categoryId = createdCategory.Id }, createdCategory);
+
+      var category = new Category
+      {
+        Name = request.Name,
+        Description = request.Description,
+        ParentCategoryId = request.ParentCategoryId,
+      };
+
+      var created = await categoryRepository.CreateCategoryAsync(category);
+      return CreatedAtAction(nameof(GetById), new { categoryId = created.Id }, CategoryResponse.From(created));
     }
     catch (Exception ex)
     {
@@ -60,23 +66,26 @@ public class CategoryController(ICategoryRepository categoryRepository) : Contro
     }
   }
 
-  [HttpPut]
-  public async Task<IActionResult> Update(Category category)
+  [HttpPut("{categoryId:guid}")]
+  public async Task<IActionResult> Update(Guid categoryId, UpdateCategoryRequest request)
   {
     try
     {
-      if (category.Id == Guid.Empty)
-        return BadRequest();
-      if (category.ParentCategoryId.HasValue)
+      if (request.ParentCategoryId.HasValue)
       {
-        var parentCategory = await categoryRepository.GetCategoryByIdAsync(category.ParentCategoryId.Value);
-        if (parentCategory == null)
-          return BadRequest("Parent category does not exist.");
+        var parent = await categoryRepository.GetCategoryByIdAsync(request.ParentCategoryId.Value);
+        if (parent == null) return BadRequest("Parent category does not exist.");
       }
-      var updatedCategory = await categoryRepository.UpdateCategoryAsync(category);
-      if (updatedCategory == null)
-        return NotFound();
-      return Ok(updatedCategory);
+
+      var existing = await categoryRepository.GetCategoryByIdAsync(categoryId);
+      if (existing == null) return NotFound();
+
+      existing.Name = request.Name;
+      existing.Description = request.Description;
+      existing.ParentCategoryId = request.ParentCategoryId;
+
+      var updated = await categoryRepository.UpdateCategoryAsync(existing);
+      return Ok(CategoryResponse.From(updated!));
     }
     catch (Exception ex)
     {
@@ -90,8 +99,7 @@ public class CategoryController(ICategoryRepository categoryRepository) : Contro
     try
     {
       var deleted = await categoryRepository.DeleteCategoryAsync(categoryId);
-      if (!deleted)
-        return NotFound();
+      if (!deleted) return NotFound();
       return Ok();
     }
     catch (Exception ex)

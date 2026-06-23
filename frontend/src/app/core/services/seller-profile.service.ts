@@ -20,6 +20,7 @@ export class SellerProfileService {
   }
 
   update(profile: SellerProfile): Observable<SellerProfile> {
-    return this.http.put<SellerProfile>(this.api, profile);
+    const body = { storeName: profile.storeName, description: profile.description };
+    return this.http.put<SellerProfile>(`${this.api}/${profile.id}`, body);
   }
 }

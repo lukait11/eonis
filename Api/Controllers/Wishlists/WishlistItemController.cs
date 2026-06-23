@@ -1,5 +1,7 @@
+using Api.Contracts.Wishlists;
 using Api.Data.Interfaces.Catalog;
 using Api.Data.Interfaces.Wishlists;
+using Api.Models.DTO.Wishlists;
 using Api.Models.Entities.Wishlists;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,10 +20,9 @@ public class WishlistItemController(
   {
     try
     {
-      var wishlistItem = await wishlistItemRepository.GetWishlistItemByIdAsync(wishlistItemId);
-      if (wishlistItem == null)
-        return NoContent();
-      return Ok(wishlistItem);
+      var item = await wishlistItemRepository.GetWishlistItemByIdAsync(wishlistItemId);
+      if (item == null) return NotFound();
+      return Ok(WishlistItemResponse.From(item));
     }
     catch (Exception ex)
     {
@@ -34,10 +35,8 @@ public class WishlistItemController(
   {
     try
     {
-      var wishlistItems = await wishlistItemRepository.GetWishlistItemsByWishlistIdAsync(wishlistId);
-      if (!wishlistItems.Any())
-        return NoContent();
-      return Ok(wishlistItems);
+      var items = await wishlistItemRepository.GetWishlistItemsByWishlistIdAsync(wishlistId);
+      return Ok(items.Select(WishlistItemResponse.From));
     }
     catch (Exception ex)
     {
@@ -46,36 +45,24 @@ public class WishlistItemController(
   }
 
   [HttpPost]
-  public async Task<IActionResult> CreateWishlistItem(WishlistItem wishlistItem)
+  public async Task<IActionResult> CreateWishlistItem(CreateWishlistItemRequest request)
   {
     try
     {
-      if (await wishlistRepository.GetWishlistByIdAsync(wishlistItem.WishlistId) == null)
+      if (await wishlistRepository.GetWishlistByIdAsync(request.WishlistId) == null)
         return NotFound("Wishlist not found.");
-      if (await productRepository.GetProductByIdAsync(wishlistItem.ProductId) == null)
+      if (await productRepository.GetProductByIdAsync(request.ProductId) == null)
         return NotFound("Product not found.");
-      var createdWishlistItem = await wishlistItemRepository.CreateWishlistItemAsync(wishlistItem);
-      return CreatedAtAction(nameof(GetWishlistItem), new { wishlistItemId = createdWishlistItem.Id }, createdWishlistItem);
-    }
-    catch (Exception ex)
-    {
-      return StatusCode(500, ex.Message);
-    }
-  }
 
-  [HttpPut]
-  public async Task<IActionResult> UpdateWishlistItem(WishlistItem wishlistItem)
-  {
-    try
-    {
-      if (await wishlistRepository.GetWishlistByIdAsync(wishlistItem.WishlistId) == null)
-        return NotFound("Wishlist not found.");
-      if (await productRepository.GetProductByIdAsync(wishlistItem.ProductId) == null)
-        return NotFound("Product not found.");
-      var updatedWishlistItem = await wishlistItemRepository.UpdateWishlistItemAsync(wishlistItem);
-      if (updatedWishlistItem == null)
-        return NotFound();
-      return Ok(updatedWishlistItem);
+      var item = new WishlistItem
+      {
+        WishlistId = request.WishlistId,
+        ProductId = request.ProductId,
+        AddedAt = DateTime.UtcNow,
+      };
+
+      var created = await wishlistItemRepository.CreateWishlistItemAsync(item);
+      return CreatedAtAction(nameof(GetWishlistItem), new { wishlistItemId = created.Id }, WishlistItemResponse.From(created));
     }
     catch (Exception ex)
     {
@@ -89,8 +76,7 @@ public class WishlistItemController(
     try
     {
       var deleted = await wishlistItemRepository.DeleteWishlistItemAsync(wishlistItemId);
-      if (!deleted)
-        return NotFound();
+      if (!deleted) return NotFound();
       return Ok();
     }
     catch (Exception ex)

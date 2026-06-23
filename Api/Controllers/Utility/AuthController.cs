@@ -1,4 +1,5 @@
 using Api.Data.Interfaces.Identity;
+using Api.Models.DTO.Auth;
 using Api.Models.Entities.Identity;
 using Api.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -126,20 +127,5 @@ public class AuthController(
       SameSite = SameSiteMode.Lax,
       Expires = DateTimeOffset.UtcNow.Add(refreshTokenService.TokenTtl)
     });
-  }
-
-  public class RegisterRequest
-  {
-    public string Email { get; set; } = null!;
-    public string Password { get; set; } = null!;
-    public string FirstName { get; set; } = null!;
-    public string LastName { get; set; } = null!;
-    public UserRole Role { get; set; }
-  }
-
-  public class LoginRequest
-  {
-    public string Email { get; set; } = null!;
-    public string Password { get; set; } = null!;
   }
 }

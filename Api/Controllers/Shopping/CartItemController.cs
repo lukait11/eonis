@@ -1,5 +1,7 @@
+using Api.Contracts.Shopping;
 using Api.Data.Interfaces.Catalog;
 using Api.Data.Interfaces.Shopping;
+using Api.Models.DTO.Shopping;
 using Api.Models.Entities.Shopping;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,10 +20,9 @@ public class CartItemController(
   {
     try
     {
-      var cartItem = await cartItemRepository.GetCartItemByIdAsync(cartItemId);
-      if (cartItem == null)
-        return NoContent();
-      return Ok(cartItem);
+      var item = await cartItemRepository.GetCartItemByIdAsync(cartItemId);
+      if (item == null) return NotFound();
+      return Ok(CartItemResponse.From(item));
     }
     catch (Exception ex)
     {
@@ -34,10 +35,8 @@ public class CartItemController(
   {
     try
     {
-      var cartItems = await cartItemRepository.GetCartItemsByCartIdAsync(cartId);
-      if (cartItems == null || !cartItems.Any())
-        return NoContent();
-      return Ok(cartItems);
+      var items = await cartItemRepository.GetCartItemsByCartIdAsync(cartId);
+      return Ok(items.Select(CartItemResponse.From));
     }
     catch (Exception ex)
     {
@@ -46,16 +45,24 @@ public class CartItemController(
   }
 
   [HttpPost]
-  public async Task<IActionResult> Create(CartItem cartItem)
+  public async Task<IActionResult> Create(CreateCartItemRequest request)
   {
     try
     {
-      if (await cartRepository.GetCartByIdAsync(cartItem.CartId) == null)
+      if (await cartRepository.GetCartByIdAsync(request.CartId) == null)
         return NotFound("Cart not found.");
-      if (await productVariantRepository.GetProductVariantByIdAsync(cartItem.ProductVariantId) == null)
+      if (await productVariantRepository.GetProductVariantByIdAsync(request.ProductVariantId) == null)
         return NotFound("Product variant not found.");
-      var createdCartItem = await cartItemRepository.CreateCartItemAsync(cartItem);
-      return CreatedAtAction(nameof(GetById), new { cartItemId = createdCartItem.Id }, createdCartItem);
+
+      var item = new CartItem
+      {
+        CartId = request.CartId,
+        ProductVariantId = request.ProductVariantId,
+        Quantity = request.Quantity,
+      };
+
+      var created = await cartItemRepository.CreateCartItemAsync(item);
+      return CreatedAtAction(nameof(GetById), new { cartItemId = created.Id }, CartItemResponse.From(created));
     }
     catch (Exception ex)
     {
@@ -63,19 +70,25 @@ public class CartItemController(
     }
   }
 
-  [HttpPut]
-  public async Task<IActionResult> Update(CartItem cartItem)
+  [HttpPut("{cartItemId:guid}")]
+  public async Task<IActionResult> Update(Guid cartItemId, UpdateCartItemRequest request)
   {
     try
     {
-      if (await cartRepository.GetCartByIdAsync(cartItem.CartId) == null)
+      if (await cartRepository.GetCartByIdAsync(request.CartId) == null)
         return NotFound("Cart not found.");
-      if (await productVariantRepository.GetProductVariantByIdAsync(cartItem.ProductVariantId) == null)
+      if (await productVariantRepository.GetProductVariantByIdAsync(request.ProductVariantId) == null)
         return NotFound("Product variant not found.");
-      var updatedCartItem = await cartItemRepository.UpdateCartItemAsync(cartItem);
-      if (updatedCartItem == null)
-        return NotFound();
-      return Ok(updatedCartItem);
+
+      var updated = await cartItemRepository.UpdateCartItemAsync(new CartItem
+      {
+        Id = cartItemId,
+        CartId = request.CartId,
+        ProductVariantId = request.ProductVariantId,
+        Quantity = request.Quantity,
+      });
+      if (updated == null) return NotFound();
+      return Ok(CartItemResponse.From(updated));
     }
     catch (Exception ex)
     {
@@ -89,8 +102,7 @@ public class CartItemController(
     try
     {
       var deleted = await cartItemRepository.DeleteCartItemAsync(cartItemId);
-      if (!deleted)
-        return NotFound();
+      if (!deleted) return NotFound();
       return Ok();
     }
     catch (Exception ex)

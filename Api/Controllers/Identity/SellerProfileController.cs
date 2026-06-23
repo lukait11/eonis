@@ -1,25 +1,21 @@
+using Api.Contracts.Identity;
 using Api.Data.Interfaces.Identity;
-using Api.Models.Entities.Identity;
+using Api.Models.DTO.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers.Identity;
 
 [ApiController]
 [Route("api/[controller]")]
-public class SellerProfileController(
-  ISellerProfileRepository sellerProfileRepository,
-  IApplicationUserRepository applicationUserRepository
-) : ControllerBase
+public class SellerProfileController(ISellerProfileRepository sellerProfileRepository) : ControllerBase
 {
   [HttpGet]
   public async Task<IActionResult> GetAll()
   {
     try
     {
-      var sellerProfiles = await sellerProfileRepository.GetSellerProfilesAsync();
-      if (sellerProfiles == null || !sellerProfiles.Any())
-        return NoContent();
-      return Ok(sellerProfiles);
+      var profiles = await sellerProfileRepository.GetSellerProfilesAsync();
+      return Ok(profiles.Select(SellerProfileResponse.From));
     }
     catch (Exception ex)
     {
@@ -32,10 +28,9 @@ public class SellerProfileController(
   {
     try
     {
-      var sellerProfile = await sellerProfileRepository.GetSellerProfileByIdAsync(sellerProfileId);
-      if (sellerProfile == null)
-        return NoContent();
-      return Ok(sellerProfile);
+      var profile = await sellerProfileRepository.GetSellerProfileByIdAsync(sellerProfileId);
+      if (profile == null) return NotFound();
+      return Ok(SellerProfileResponse.From(profile));
     }
     catch (Exception ex)
     {
@@ -43,35 +38,19 @@ public class SellerProfileController(
     }
   }
 
-  [HttpPost]
-  public async Task<IActionResult> Create(SellerProfile sellerProfile)
+  [HttpPut("{sellerProfileId:guid}")]
+  public async Task<IActionResult> Update(Guid sellerProfileId, UpdateSellerProfileRequest request)
   {
     try
     {
-      if (await applicationUserRepository.GetUserByIdAsync(sellerProfile.UserId) == null)
-        return BadRequest("User does not exist.");
-      var createdSellerProfile = await sellerProfileRepository.CreateSellerProfileAsync(sellerProfile);
-      return CreatedAtAction(nameof(GetById), new { sellerProfileId = createdSellerProfile.Id }, createdSellerProfile);
-    }
-    catch (Exception ex)
-    {
-      return StatusCode(500, ex.Message);
-    }
-  }
+      var existing = await sellerProfileRepository.GetSellerProfileByIdAsync(sellerProfileId);
+      if (existing == null) return NotFound();
 
-  [HttpPut]
-  public async Task<IActionResult> Update(SellerProfile sellerProfile)
-  {
-    try
-    {
-      if (sellerProfile.Id == Guid.Empty)
-        return BadRequest();
-      if (await applicationUserRepository.GetUserByIdAsync(sellerProfile.UserId) == null)
-        return BadRequest("User does not exist.");
-      var updatedSellerProfile = await sellerProfileRepository.UpdateSellerProfileAsync(sellerProfile);
-      if (updatedSellerProfile == null)
-        return NotFound();
-      return Ok(updatedSellerProfile);
+      existing.StoreName = request.StoreName;
+      existing.Description = request.Description;
+
+      var updated = await sellerProfileRepository.UpdateSellerProfileAsync(existing);
+      return Ok(SellerProfileResponse.From(updated!));
     }
     catch (Exception ex)
     {
@@ -85,8 +64,7 @@ public class SellerProfileController(
     try
     {
       var deleted = await sellerProfileRepository.DeleteSellerProfileAsync(sellerProfileId);
-      if (!deleted)
-        return NotFound();
+      if (!deleted) return NotFound();
       return Ok();
     }
     catch (Exception ex)

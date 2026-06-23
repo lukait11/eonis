@@ -1,5 +1,7 @@
+using Api.Contracts.Shopping;
 using Api.Data.Interfaces.Identity;
 using Api.Data.Interfaces.Shopping;
+using Api.Models.DTO.Shopping;
 using Api.Models.Entities.Shopping;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,9 +20,8 @@ public class CartController(
     try
     {
       var cart = await cartRepository.GetCartByIdAsync(cartId);
-      if (cart == null)
-        return NoContent();
-      return Ok(cart);
+      if (cart == null) return NotFound();
+      return Ok(CartResponse.From(cart));
     }
     catch (Exception ex)
     {
@@ -34,9 +35,8 @@ public class CartController(
     try
     {
       var cart = await cartRepository.GetCartByUserIdAsync(userId);
-      if (cart == null)
-        return NotFound();
-      return Ok(cart);
+      if (cart == null) return NotFound();
+      return Ok(CartResponse.From(cart));
     }
     catch (Exception ex)
     {
@@ -45,32 +45,16 @@ public class CartController(
   }
 
   [HttpPost]
-  public async Task<IActionResult> CreateCart(Cart cart)
+  public async Task<IActionResult> Create(CreateCartRequest request)
   {
     try
     {
-      if (await userRepository.GetUserByIdAsync(cart.UserId) == null)
+      if (await userRepository.GetUserByIdAsync(request.UserId) == null)
         return BadRequest("User not found.");
-      var createdCart = await cartRepository.CreateCartAsync(cart);
-      return CreatedAtAction(nameof(GetById), new { cartId = createdCart.Id }, createdCart);
-    }
-    catch (Exception ex)
-    {
-      return StatusCode(500, ex.Message);
-    }
-  }
 
-  [HttpPut]
-  public async Task<IActionResult> UpdateCart(Cart cart)
-  {
-    try
-    {
-      if (await userRepository.GetUserByIdAsync(cart.UserId) == null)
-        return BadRequest("User not found.");
-      var updatedCart = await cartRepository.UpdateCartAsync(cart);
-      if (updatedCart == null)
-        return NotFound();
-      return Ok(updatedCart);
+      var cart = new Cart { UserId = request.UserId };
+      var created = await cartRepository.CreateCartAsync(cart);
+      return CreatedAtAction(nameof(GetById), new { cartId = created.Id }, CartResponse.From(created));
     }
     catch (Exception ex)
     {
@@ -79,13 +63,12 @@ public class CartController(
   }
 
   [HttpDelete("{cartId:guid}")]
-  public async Task<IActionResult> DeleteCart(Guid cartId)
+  public async Task<IActionResult> Delete(Guid cartId)
   {
     try
     {
       var deleted = await cartRepository.DeleteCartAsync(cartId);
-      if (!deleted)
-        return NotFound();
+      if (!deleted) return NotFound();
       return Ok();
     }
     catch (Exception ex)

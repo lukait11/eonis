@@ -1,6 +1,7 @@
 using System.Security.Claims;
+using Api.Contracts.Identity;
 using Api.Data.Interfaces.Identity;
-using Api.Models.Entities.Identity;
+using Api.Models.DTO.Identity;
 using Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,7 +14,7 @@ public class ApplicationUserController(
   IApplicationUserRepository applicationUserRepository,
   IStorageService storageService,
   ImageService imageService
-  ) : ControllerBase
+) : ControllerBase
 {
   [HttpGet]
   public async Task<IActionResult> GetAll()
@@ -21,9 +22,7 @@ public class ApplicationUserController(
     try
     {
       var users = await applicationUserRepository.GetUsersAsync();
-      if (users == null || !users.Any())
-        return NoContent();
-      return Ok(users);
+      return Ok(users.Select(UserResponse.From));
     }
     catch (Exception ex)
     {
@@ -37,9 +36,8 @@ public class ApplicationUserController(
     try
     {
       var user = await applicationUserRepository.GetUserByIdAsync(userId);
-      if (user == null)
-        return NoContent();
-      return Ok(user);
+      if (user == null) return NotFound();
+      return Ok(UserResponse.From(user));
     }
     catch (Exception ex)
     {
@@ -47,57 +45,23 @@ public class ApplicationUserController(
     }
   }
 
-  [HttpPost]
-  public async Task<IActionResult> Create(ApplicationUser user)
+  [HttpPut("{userId:guid}")]
+  public async Task<IActionResult> Update(Guid userId, UpdateUserRequest request)
   {
     try
     {
-      var createdUser = await applicationUserRepository.CreateUserAsync(user);
-      return CreatedAtAction(nameof(GetById), new { userId = createdUser.Id }, createdUser);
-    }
-    catch (Exception ex)
-    {
-      return StatusCode(500, ex.Message);
-    }
-  }
+      var existing = await applicationUserRepository.GetUserByIdAsync(userId);
+      if (existing == null) return NotFound();
 
-  [HttpPut]
-  public async Task<IActionResult> Update(ApplicationUser user)
-  {
-    try
-    {
-      if (user.Id == Guid.Empty)
-        return BadRequest();
-
-      var existing = await applicationUserRepository.GetUserByIdAsync(user.Id);
-      if (existing == null)
-        return NotFound();
-
-      existing.FirstName = user.FirstName;
-      existing.LastName = user.LastName;
-      existing.PhoneNumber = user.PhoneNumber;
-      existing.DateOfBirth = user.DateOfBirth.HasValue
-        ? DateTime.SpecifyKind(user.DateOfBirth.Value, DateTimeKind.Utc)
+      existing.FirstName = request.FirstName;
+      existing.LastName = request.LastName;
+      existing.PhoneNumber = request.PhoneNumber;
+      existing.DateOfBirth = request.DateOfBirth.HasValue
+        ? DateTime.SpecifyKind(request.DateOfBirth.Value, DateTimeKind.Utc)
         : null;
 
       var updated = await applicationUserRepository.UpdateUserAsync(existing);
-      return Ok(updated);
-    }
-    catch (Exception ex)
-    {
-      return StatusCode(500, ex.Message);
-    }
-  }
-
-  [HttpDelete("{userId:guid}")]
-  public async Task<IActionResult> Delete(Guid userId)
-  {
-    try
-    {
-      var deleted = await applicationUserRepository.DeleteUserAsync(userId);
-      if (!deleted)
-        return NotFound();
-      return Ok();
+      return Ok(UserResponse.From(updated!));
     }
     catch (Exception ex)
     {
@@ -132,7 +96,6 @@ public class ApplicationUserController(
         return BadRequest(ex.Message);
       }
 
-      // Delete the old image only after the new one is safely uploaded (versioned key approach)
       var oldUrl = user.ProfilePictureUrl;
       user.ProfilePictureUrl = proxyUrl;
       await applicationUserRepository.UpdateUserAsync(user);
@@ -152,20 +115,15 @@ public class ApplicationUserController(
     }
   }
 
-  /// <summary>Extracts the storage key (path after bucket) from a full Garage URL.</summary>
   private static string? ExtractStorageKey(string url)
   {
     try
     {
       var uri = new Uri(url);
       var path = uri.AbsolutePath;
-
-      // Proxy URL format: /api/image/{key}
       const string proxyPrefix = "/api/image/";
       if (path.StartsWith(proxyPrefix))
         return path[proxyPrefix.Length..];
-
-      // Legacy Garage URL format: /{bucket}/{key}
       var segments = path.TrimStart('/').Split('/', 2);
       return segments.Length == 2 ? segments[1] : null;
     }

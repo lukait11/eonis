@@ -15,7 +15,13 @@ export class UserService {
   }
 
   updateUser(user: ApplicationUser): Observable<ApplicationUser> {
-    return this.http.put<ApplicationUser>(`${this.api}`, user);
+    const body = {
+      firstName: user.firstName,
+      lastName: user.lastName,
+      phoneNumber: user.phoneNumber,
+      dateOfBirth: user.dateOfBirth,
+    };
+    return this.http.put<ApplicationUser>(`${this.api}/${user.id}`, body);
   }
 
   uploadProfilePicture(file: File): Observable<string> {

@@ -38,7 +38,16 @@ export class ProductService {
   }
 
   update(product: Product): Observable<Product> {
-    return this.http.put<Product>(this.api, product);
+    const body = {
+      categoryId: product.categoryId,
+      name: product.name,
+      description: product.description,
+      basePrice: product.basePrice,
+      discount: product.discount,
+      material: product.material,
+      status: product.status,
+    };
+    return this.http.put<Product>(`${this.api}/${product.id}`, body);
   }
 
   delete(id: string): Observable<void> {
@@ -60,7 +69,13 @@ export class ProductService {
   }
 
   updateVariant(variant: ProductVariant): Observable<ProductVariant> {
-    return this.http.put<ProductVariant>(this.variantApi, variant);
+    const body = {
+      productId: variant.productId,
+      size: variant.size,
+      color: variant.color,
+      quantity: variant.quantity,
+    };
+    return this.http.put<ProductVariant>(`${this.variantApi}/${variant.id}`, body);
   }
 
   deleteVariant(id: string): Observable<void> {

@@ -1,6 +1,8 @@
+using Api.Contracts.Reviews;
 using Api.Data.Interfaces.Catalog;
 using Api.Data.Interfaces.Identity;
 using Api.Data.Interfaces.Reviews;
+using Api.Models.DTO.Reviews;
 using Api.Models.Entities.Reviews;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,9 +22,7 @@ public class ProductReviewController(
     try
     {
       var reviews = await productReviewRepository.GetProductReviewsByUserIdAsync(userId);
-      if (reviews == null || !reviews.Any())
-        return NoContent();
-      return Ok(reviews);
+      return Ok(reviews.Select(ProductReviewResponse.From));
     }
     catch (Exception ex)
     {
@@ -36,9 +36,7 @@ public class ProductReviewController(
     try
     {
       var reviews = await productReviewRepository.GetProductReviewsByProductIdAsync(productId);
-      if (reviews == null || !reviews.Any())
-        return NoContent();
-      return Ok(reviews);
+      return Ok(reviews.Select(ProductReviewResponse.From));
     }
     catch (Exception ex)
     {
@@ -52,9 +50,8 @@ public class ProductReviewController(
     try
     {
       var review = await productReviewRepository.GetProductReviewByIdAsync(reviewId);
-      if (review == null)
-        return NotFound();
-      return Ok(review);
+      if (review == null) return NotFound();
+      return Ok(ProductReviewResponse.From(review));
     }
     catch (Exception ex)
     {
@@ -63,16 +60,25 @@ public class ProductReviewController(
   }
 
   [HttpPost]
-  public async Task<IActionResult> Create(ProductReview productReview)
+  public async Task<IActionResult> Create(CreateProductReviewRequest request)
   {
     try
     {
-      if (await productRepository.GetProductByIdAsync(productReview.ProductId) == null)
-        return NotFound($"Product with ID {productReview.ProductId} not found.");
-      if (await applicationUserRepository.GetUserByIdAsync(productReview.UserId) == null)
-        return NotFound($"User with ID {productReview.UserId} not found.");
-      var createdReview = await productReviewRepository.CreateProductReviewAsync(productReview);
-      return CreatedAtAction(nameof(GetById), new { reviewId = createdReview.Id }, createdReview);
+      if (await productRepository.GetProductByIdAsync(request.ProductId) == null)
+        return NotFound($"Product with ID {request.ProductId} not found.");
+      if (await applicationUserRepository.GetUserByIdAsync(request.UserId) == null)
+        return NotFound($"User with ID {request.UserId} not found.");
+
+      var review = new ProductReview
+      {
+        ProductId = request.ProductId,
+        UserId = request.UserId,
+        Rating = request.Rating,
+        Comment = request.Comment,
+      };
+
+      var created = await productReviewRepository.CreateProductReviewAsync(review);
+      return CreatedAtAction(nameof(GetById), new { reviewId = created.Id }, ProductReviewResponse.From(created));
     }
     catch (Exception ex)
     {
@@ -86,8 +92,7 @@ public class ProductReviewController(
     try
     {
       var deleted = await productReviewRepository.DeleteProductReviewAsync(reviewId);
-      if (!deleted)
-        return NotFound();
+      if (!deleted) return NotFound();
       return Ok();
     }
     catch (Exception ex)

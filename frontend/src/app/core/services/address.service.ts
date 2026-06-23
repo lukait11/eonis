@@ -20,7 +20,8 @@ export class AddressService {
   }
 
   update(address: Address): Observable<Address> {
-    return this.http.put<Address>(this.api, address);
+    const body = { userId: address.userId, country: address.country, city: address.city, street: address.street, postalCode: address.postalCode };
+    return this.http.put<Address>(`${this.api}/${address.id}`, body);
   }
 
   delete(id: string): Observable<void> {
