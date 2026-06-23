@@ -6,7 +6,7 @@ public class Payment
 {
   public Guid Id { get; set; }
   public Guid OrderId { get; set; }
-  public Guid StripePaymentIntentId { get; set; }
+  public string StripePaymentIntentId { get; set; } = string.Empty;
   public double Amount { get; set; }
   public string Currency { get; set; } = "RSD";
   public PaymentStatus Status { get; set; }

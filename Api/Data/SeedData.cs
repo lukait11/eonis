@@ -246,8 +246,8 @@ public static class SeedData
 
     // Payments
     context.Payments.AddRange(
-      new Payment { Id = Guid.NewGuid(), OrderId = order1.Id, Amount = 76.48, Currency = "USD", Status = PaymentStatus.Succeeded, StripePaymentIntentId = Guid.NewGuid(), CreatedAt = DateTime.UtcNow.AddDays(-5) },
-      new Payment { Id = Guid.NewGuid(), OrderId = order2.Id, Amount = 55.99, Currency = "USD", Status = PaymentStatus.Pending,   StripePaymentIntentId = Guid.NewGuid(), CreatedAt = DateTime.UtcNow.AddDays(-1) }
+      new Payment { Id = Guid.NewGuid(), OrderId = order1.Id, Amount = 76.48, Currency = "USD", Status = PaymentStatus.Succeeded, StripePaymentIntentId = "pi_test_seed_1", CreatedAt = DateTime.UtcNow.AddDays(-5) },
+      new Payment { Id = Guid.NewGuid(), OrderId = order2.Id, Amount = 55.99, Currency = "USD", Status = PaymentStatus.Pending,   StripePaymentIntentId = "pi_test_seed_2", CreatedAt = DateTime.UtcNow.AddDays(-1) }
     );
 
     // Seller review

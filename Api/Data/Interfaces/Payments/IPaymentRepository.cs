@@ -8,6 +8,7 @@ public interface IPaymentRepository
   Task<Payment?> GetPaymentByIdAsync(Guid paymentId);
   Task<IEnumerable<Payment>> GetPaymentsByUserIdAsync(Guid userId);
   Task<Payment> GetPaymentByOrderIdAsync(Guid orderId);
+  Task<Payment?> GetPaymentByStripeIdAsync(string stripePaymentIntentId);
   Task<IEnumerable<Payment>> GetPaymentsByStatusAsync(PaymentStatus status);
   Task<Payment> CreatePaymentAsync(Payment payment);
   Task<Payment?> UpdatePaymentAsync(Payment payment);

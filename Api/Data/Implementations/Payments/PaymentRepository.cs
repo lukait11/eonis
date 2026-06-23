@@ -60,4 +60,11 @@ public class PaymentRepository(DatabaseContext context) : IPaymentRepository
     await context.SaveChangesAsync();
     return payment;
   }
+
+  public async Task<Payment?> GetPaymentByStripeIdAsync(string stripePaymentIntentId)
+  {
+    return await context.Payments
+      .Include(p => p.Order)
+      .FirstOrDefaultAsync(p => p.StripePaymentIntentId == stripePaymentIntentId);
+  }
 }

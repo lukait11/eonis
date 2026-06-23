@@ -1,13 +1,16 @@
 using System.Text;
 using Api.Context;
+using Stripe;
 using Api.Data;
 using Api.Data.Implementations.Catalog;
 using Api.Data.Implementations.Identity;
 using Api.Data.Implementations.Orders;
 using Api.Data.Implementations.Reviews;
 using Api.Data.Implementations.Shopping;
+using Api.Data.Implementations.Payments;
 using Api.Data.Implementations.Wishlists;
 using Api.Data.Interfaces.Catalog;
+using Api.Data.Interfaces.Payments;
 using Api.Data.Interfaces.Identity;
 using Api.Data.Interfaces.Orders;
 using Api.Data.Interfaces.Reviews;
@@ -80,11 +83,15 @@ builder.Services.AddScoped<ICartRepository, CartRepository>();
 builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
 builder.Services.AddScoped<IWishlistRepository, WishlistRepository>();
 builder.Services.AddScoped<IWishlistItemRepository, WishlistItemRepository>();
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<RefreshTokenService>();
 builder.Services.AddScoped<ImageService>();
 builder.Services.AddScoped<IStorageService, GarageStorageService>();
+builder.Services.AddScoped<StripeService>();
+
+StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
 
 
 builder.Services.AddAuthorization();
