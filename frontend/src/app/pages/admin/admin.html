@@ -274,36 +274,7 @@
                   <span class="cell-mono">#{{ o.id.slice(0, 8).toUpperCase() }}</span>
                   <span class="cell-date">{{ o.createdAt | date:'mediumDate' }}</span>
                   <span class="cell-amount">{{ o.baseAmount - o.discount | number:'1.2-2' }} €</span>
-                  <div class="cell-status" (click)="$event.stopPropagation()">
-                    <div class="status-dropdown">
-                      <button
-                        class="status-btn"
-                        [style.color]="statusColor(o.status)"
-                        [disabled]="updatingOrderId() === o.id"
-                        (click)="toggleStatusDropdown(o.id, $event)">
-                        {{ o.status }}
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="chevron">
-                          <polyline points="6 9 12 15 18 9"/>
-                        </svg>
-                      </button>
-                      @if (openStatusDropdownId() === o.id) {
-                        <div class="status-menu">
-                          @for (s of orderStatuses; track s) {
-                            <button
-                              class="status-option"
-                              [class.current]="o.status === s"
-                              [style.color]="statusColor(s)"
-                              (click)="pickStatus(o, s, $event)">
-                              {{ s }}
-                            </button>
-                          }
-                        </div>
-                      }
-                    </div>
-                    @if (updatingOrderId() === o.id) {
-                      <div class="status-spinner"></div>
-                    }
-                  </div>
+                  <span class="cell-status-text" [style.color]="statusColor(o.status)">{{ o.status }}</span>
                 </div>
               }
             </div>

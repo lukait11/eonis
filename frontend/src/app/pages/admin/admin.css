@@ -128,6 +128,7 @@
 
 .cell-actions { display: flex; gap: 0.4rem; justify-content: flex-end; }
 .cell-status { display: flex; align-items: center; gap: 0.5rem; }
+.cell-status-text { font-size: 0.82rem; font-weight: 600; }
 
 /* Custom status dropdown */
 .status-dropdown { position: relative; }
