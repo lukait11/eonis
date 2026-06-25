@@ -38,7 +38,7 @@
       </div>
 
       <div class="product-price">
-        <span class="price-main">{{ effectivePrice | number:'1.2-2' }} RSD</span>
+        <span class="price-main">{{ effectivePrice | number:'1.2-2' }} €</span>
         @if (product()!.discount > 0) {
           <span class="price-original">{{ product()!.basePrice | number:'1.2-2' }}</span>
           <span class="price-badge">-{{ product()!.discount }}%</span>

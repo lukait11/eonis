@@ -52,14 +52,14 @@
                 <p class="co-item-qty">Qty: {{ view.item.quantity }}</p>
               </div>
               <p class="co-item-price">
-                {{ (view.product?.basePrice ?? 0) * (1 - (view.product?.discount ?? 0) / 100) * view.item.quantity | number:'1.2-2' }} RSD
+                {{ (view.product?.basePrice ?? 0) * (1 - (view.product?.discount ?? 0) / 100) * view.item.quantity | number:'1.2-2' }} €
               </p>
             </div>
           }
         </div>
         <div class="co-total-row">
           <span>Total</span>
-          <span class="co-total-amount">{{ total() | number:'1.2-2' }} RSD</span>
+          <span class="co-total-amount">{{ total() | number:'1.2-2' }} €</span>
         </div>
       </div>
 
@@ -143,7 +143,7 @@
             [disabled]="processing()"
             (click)="pay()"
           >
-            {{ processing() ? 'Processing…' : 'Pay ' + (total() | number:'1.2-2') + ' RSD' }}
+            {{ processing() ? 'Processing…' : 'Pay ' + (total() | number:'1.2-2') + ' €' }}
           </button>
         </div>
       }

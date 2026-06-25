@@ -26,7 +26,7 @@
     <p class="card-category">{{ product.categories?.length ? product.categories[0].name : 'Uncategorized' }}</p>
     <h3 class="card-name">{{ product.name }}</h3>
     <div class="card-price">
-      <span class="price-current">{{ price | number:'1.2-2' }} RSD</span>
+      <span class="price-current">{{ price | number:'1.2-2' }} €</span>
       @if (hasDiscount) {
         <span class="price-original">{{ product.basePrice | number:'1.2-2' }}</span>
       }

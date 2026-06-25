@@ -37,7 +37,7 @@
                 <p class="cart-variant">{{ view.item.productVariant.size }} / {{ view.item.productVariant.color }}</p>
               }
               <p class="cart-unit-price">
-                {{ (view.product?.basePrice ?? 0) * (1 - (view.product?.discount ?? 0) / 100) | number:'1.2-2' }} RSD each
+                {{ (view.product?.basePrice ?? 0) * (1 - (view.product?.discount ?? 0) / 100) | number:'1.2-2' }} € each
               </p>
             </div>
 
@@ -48,7 +48,7 @@
             </div>
 
             <div class="cart-subtotal">
-              {{ (view.product?.basePrice ?? 0) * (1 - (view.product?.discount ?? 0) / 100) * view.item.quantity | number:'1.2-2' }} RSD
+              {{ (view.product?.basePrice ?? 0) * (1 - (view.product?.discount ?? 0) / 100) * view.item.quantity | number:'1.2-2' }} €
             </div>
 
             <button class="cart-remove" (click)="remove(view.item.id)" aria-label="Remove">
@@ -64,7 +64,7 @@
         <h2>Order summary</h2>
         <div class="summary-line">
           <span>Subtotal</span>
-          <span>{{ total() | number:'1.2-2' }} RSD</span>
+          <span>{{ total() | number:'1.2-2' }} €</span>
         </div>
         <div class="summary-line">
           <span>Shipping</span>
@@ -73,7 +73,7 @@
         <div class="summary-divider"></div>
         <div class="summary-line summary-total">
           <span>Total</span>
-          <span>{{ total() | number:'1.2-2' }} RSD</span>
+          <span>{{ total() | number:'1.2-2' }} €</span>
         </div>
         <a routerLink="/checkout" class="btn-checkout">Checkout</a>
         <a routerLink="/explore" class="continue-link">← Continue shopping</a>

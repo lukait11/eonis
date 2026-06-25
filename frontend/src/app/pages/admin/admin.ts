@@ -65,7 +65,10 @@ export class Admin implements OnInit {
 
   // Orders
   orders = signal<Order[]>([]);
+  selectedOrder = signal<Order | null>(null);
+  loadingOrderDetail = signal(false);
   updatingOrderId = signal<string | null>(null);
+  openStatusDropdownId = signal<string | null>(null);
 
   readonly orderStatuses: OrderStatus[] = ['Pending', 'Paid', 'Shipped', 'Delivered', 'Cancelled'];
 
@@ -85,7 +88,7 @@ export class Admin implements OnInit {
         this.users.set(all.filter(u => u.role === 'Customer'));
         this.sellers.set(all.filter(u => u.role === 'Seller'));
         done();
-        done(); // counts for both users + sellers
+        done();
       },
       error: () => { done(); done(); },
     });
@@ -96,6 +99,10 @@ export class Admin implements OnInit {
     this.closeAllModals();
   }
 
+  closeDropdowns(): void {
+    this.openStatusDropdownId.set(null);
+  }
+
   private closeAllModals(): void {
     this.showCategoryForm.set(false);
     this.editingCategory.set(null);
@@ -104,6 +111,8 @@ export class Admin implements OnInit {
     this.deleteConfirmUserId.set(null);
     this.deleteConfirmSellerId.set(null);
     this.deletingCategoryId.set(null);
+    this.selectedOrder.set(null);
+    this.openStatusDropdownId.set(null);
   }
 
   // ── Categories ──────────────────────────────────────────────────────────────
@@ -130,7 +139,6 @@ export class Admin implements OnInit {
     this.savingCategory.set(true);
     const val = this.categoryForm.getRawValue();
     const editing = this.editingCategory();
-
     const req = { name: val.name!, description: val.description ?? '' };
 
     if (editing) {
@@ -262,11 +270,36 @@ export class Admin implements OnInit {
 
   // ── Orders ──────────────────────────────────────────────────────────────────
 
+  selectOrder(order: Order): void {
+    this.loadingOrderDetail.set(true);
+    this.orderService.getById(order.id).subscribe({
+      next: full => { this.selectedOrder.set(full); this.loadingOrderDetail.set(false); },
+      error: () => { this.selectedOrder.set(order); this.loadingOrderDetail.set(false); },
+    });
+  }
+
+  closeOrderDetail(): void { this.selectedOrder.set(null); }
+
+  toggleStatusDropdown(orderId: string, event: MouseEvent): void {
+    event.stopPropagation();
+    this.openStatusDropdownId.update(id => id === orderId ? null : orderId);
+  }
+
+  pickStatus(order: Order, status: OrderStatus, event: MouseEvent): void {
+    event.stopPropagation();
+    this.openStatusDropdownId.set(null);
+    if (order.status === status) return;
+    this.changeOrderStatus(order, status);
+  }
+
   changeOrderStatus(order: Order, status: string): void {
     this.updatingOrderId.set(order.id);
     this.orderService.updateStatus(order.id, status).subscribe({
       next: updated => {
-        this.orders.update(list => list.map(o => o.id === updated.id ? updated : o));
+        this.orders.update(list => list.map(o => o.id === updated.id ? { ...o, status: updated.status } : o));
+        if (this.selectedOrder()?.id === updated.id) {
+          this.selectedOrder.update(o => o ? { ...o, status: updated.status } : o);
+        }
         this.updatingOrderId.set(null);
       },
       error: () => this.updatingOrderId.set(null),

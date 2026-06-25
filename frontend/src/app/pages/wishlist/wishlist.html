@@ -29,7 +29,7 @@
 
           <div class="wish-body">
             <a [routerLink]="['/product', v.product?.id]" class="wish-name">{{ v.product?.name ?? 'Product' }}</a>
-            <p class="wish-price">{{ getPrice(v.product!) | number:'1.2-2' }} RSD</p>
+            <p class="wish-price">{{ getPrice(v.product!) | number:'1.2-2' }} €</p>
             @if ((v.product?.discount ?? 0) > 0) {
               <p class="wish-original">{{ v.product?.basePrice | number:'1.2-2' }}</p>
             }
