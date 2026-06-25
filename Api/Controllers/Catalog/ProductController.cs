@@ -180,7 +180,7 @@ public class ProductController(
       var product = await productRepository.GetProductByIdAsync(productId);
       if (product == null) return NotFound("Product not found.");
 
-      var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+      var userId = Guid.Parse(User.FindFirst("sub")!.Value);
       var sellerProfile = await sellerProfileRepository.GetSellerProfileByIdAsync(product.SellerId);
       if (sellerProfile == null || sellerProfile.UserId != userId) return Forbid();
 
@@ -204,7 +204,7 @@ public class ProductController(
       var product = await productRepository.GetProductByIdAsync(productId);
       if (product == null) return NotFound("Product not found.");
 
-      var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+      var userId = Guid.Parse(User.FindFirst("sub")!.Value);
       var sellerProfile = await sellerProfileRepository.GetSellerProfileByIdAsync(product.SellerId);
       if (sellerProfile == null || sellerProfile.UserId != userId) return Forbid();
 
@@ -234,7 +234,7 @@ public class ProductController(
       var product = await productRepository.GetProductByIdAsync(productId);
       if (product == null) return NotFound("Product does not exist.");
 
-      var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+      var userId = Guid.Parse(User.FindFirst("sub")!.Value);
       var user = await applicationUserRepository.GetUserByIdAsync(userId);
       if (user is null) return Unauthorized();
 

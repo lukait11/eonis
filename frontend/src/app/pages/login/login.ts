@@ -33,17 +33,14 @@ export class Login {
     this.error.set('');
 
     this.auth.login(this.form.getRawValue() as any).subscribe({
-      next: (token) => {
-        console.log('[Login] success, token:', token);
+      next: () => {
         const userId = this.auth.currentUserId()!;
-        console.log('[Login] resolved userId:', userId);
         this.cart.loadCart(userId).subscribe();
         this.wishlist.loadWishlist(userId).subscribe();
         const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') ?? '/';
         this.router.navigateByUrl(returnUrl);
       },
       error: (err) => {
-        console.error('[Login] error:', err);
         this.error.set('Invalid email or password.');
         this.loading.set(false);
       },
