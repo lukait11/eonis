@@ -4,6 +4,7 @@ using Api.Data.Interfaces.Identity;
 using Api.Data.Interfaces.Orders;
 using Api.Models.DTO.Orders;
 using Api.Models.Entities.Orders;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers.Orders;
@@ -19,6 +20,7 @@ public class OrderController(
   IProductVariantRepository productVariantRepository
 ) : ControllerBase
 {
+  [Authorize(Roles = "Admin")]
   [HttpGet]
   public async Task<IActionResult> GetAll()
   {
@@ -121,6 +123,7 @@ public class OrderController(
     }
   }
 
+  [Authorize(Roles = "Admin")]
   [HttpPut("{orderId:guid}/status")]
   public async Task<IActionResult> UpdateStatus(Guid orderId, UpdateOrderStatusRequest request)
   {

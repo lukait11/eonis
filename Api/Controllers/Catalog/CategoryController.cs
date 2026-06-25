@@ -2,6 +2,7 @@ using Api.Contracts.Catalog;
 using Api.Data.Interfaces.Catalog;
 using Api.Models.DTO.Catalog;
 using Api.Models.Entities.Catalog;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers.Catalog;
@@ -39,6 +40,7 @@ public class CategoryController(ICategoryRepository categoryRepository) : Contro
     }
   }
 
+  [Authorize(Roles = "Admin")]
   [HttpPost]
   public async Task<IActionResult> Create(CreateCategoryRequest request)
   {
@@ -59,6 +61,7 @@ public class CategoryController(ICategoryRepository categoryRepository) : Contro
     }
   }
 
+  [Authorize(Roles = "Admin")]
   [HttpPut("{categoryId:guid}")]
   public async Task<IActionResult> Update(Guid categoryId, UpdateCategoryRequest request)
   {
@@ -79,6 +82,7 @@ public class CategoryController(ICategoryRepository categoryRepository) : Contro
     }
   }
 
+  [Authorize(Roles = "Admin")]
   [HttpDelete("{categoryId:guid}")]
   public async Task<IActionResult> Delete(Guid categoryId)
   {

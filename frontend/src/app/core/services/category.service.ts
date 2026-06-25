@@ -18,4 +18,16 @@ export class CategoryService {
   getById(id: string): Observable<Category> {
     return this.http.get<Category>(`${this.api}/${id}`);
   }
+
+  create(req: { name: string; description: string }): Observable<Category> {
+    return this.http.post<Category>(this.api, req);
+  }
+
+  update(id: string, req: { name: string; description: string }): Observable<Category> {
+    return this.http.put<Category>(`${this.api}/${id}`, req);
+  }
+
+  delete(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.api}/${id}`);
+  }
 }

@@ -16,6 +16,7 @@ public class ApplicationUserController(
   ImageService imageService
 ) : ControllerBase
 {
+  [Authorize(Roles = "Admin")]
   [HttpGet]
   public async Task<IActionResult> GetAll()
   {
@@ -30,6 +31,7 @@ public class ApplicationUserController(
     }
   }
 
+  [Authorize]
   [HttpGet("{userId:guid}")]
   public async Task<IActionResult> GetById(Guid userId)
   {
@@ -45,6 +47,7 @@ public class ApplicationUserController(
     }
   }
 
+  [Authorize]
   [HttpPut("{userId:guid}")]
   public async Task<IActionResult> Update(Guid userId, UpdateUserRequest request)
   {
@@ -62,6 +65,22 @@ public class ApplicationUserController(
 
       var updated = await applicationUserRepository.UpdateUserAsync(existing);
       return Ok(UserResponse.From(updated!));
+    }
+    catch (Exception ex)
+    {
+      return StatusCode(500, ex.Message);
+    }
+  }
+
+  [Authorize(Roles = "Admin")]
+  [HttpDelete("{userId:guid}")]
+  public async Task<IActionResult> Delete(Guid userId)
+  {
+    try
+    {
+      var deleted = await applicationUserRepository.DeleteUserAsync(userId);
+      if (!deleted) return NotFound();
+      return Ok();
     }
     catch (Exception ex)
     {

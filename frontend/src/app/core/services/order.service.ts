@@ -12,6 +12,10 @@ export class OrderService {
 
   constructor(private http: HttpClient) {}
 
+  getAll(): Observable<Order[]> {
+    return this.http.get<Order[]>(this.api).pipe(map(r => r ?? []));
+  }
+
   getByUser(userId: string): Observable<Order[]> {
     return this.http.get<Order[]>(`${this.api}/user/${userId}`).pipe(map(r => r ?? []));
   }

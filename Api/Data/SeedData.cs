@@ -14,6 +14,18 @@ public static class SeedData
   public static async Task InitializeAsync(DatabaseContext context)
   {
     // Users
+    var admin = new ApplicationUser
+    {
+      Id = Guid.NewGuid(),
+      Role = UserRole.Admin,
+      Email = "admin@example.com",
+      PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!"),
+      FirstName = "Root",
+      LastName = "Admin",
+      IsActive = true,
+      CreatedAt = DateTime.UtcNow
+    };
+
     var seller = new ApplicationUser
     {
       Id = Guid.NewGuid(),
@@ -50,7 +62,7 @@ public static class SeedData
       CreatedAt = DateTime.UtcNow
     };
 
-    context.Users.AddRange(seller, customer1, customer2);
+    context.Users.AddRange(admin, seller, customer1, customer2);
 
     // Seller profile
     var sellerProfile = new SellerProfile

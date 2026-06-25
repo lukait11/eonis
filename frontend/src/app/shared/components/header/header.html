@@ -8,6 +8,9 @@
       @if (auth.isLoggedIn() && auth.currentUserRole() === 'Seller') {
         <a routerLink="/my-store" routerLinkActive="active" (click)="menuOpen.set(false)">My Store</a>
       }
+      @if (auth.isLoggedIn() && auth.currentUserRole() === 'Admin') {
+        <a routerLink="/admin" routerLinkActive="active" (click)="menuOpen.set(false)">Admin</a>
+      }
     </nav>
 
     <div class="header-actions">

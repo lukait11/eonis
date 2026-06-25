@@ -17,3 +17,11 @@ export const sellerGuard: CanActivateFn = () => {
   router.navigate(['/']);
   return false;
 };
+
+export const adminGuard: CanActivateFn = () => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
+  if (auth.isLoggedIn() && auth.currentUserRole() === 'Admin') return true;
+  router.navigate(['/']);
+  return false;
+};
