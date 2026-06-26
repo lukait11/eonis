@@ -147,12 +147,19 @@ export class MyStore implements OnInit {
     this.uploadingId.set(productId);
     this.productService.uploadImage(productId, file).subscribe({
       next: url => {
+        const loadedImages = this.productImages()[productId];
+        const existingImages = loadedImages ?? this.products().find(p => p.id === productId)?.images ?? [];
+        const newImg: ProductImage = { id: crypto.randomUUID(), productId, imageUrl: url, isPrimary: existingImages.length === 0 };
+
         this.products.update(list => list.map(p => {
           if (p.id !== productId) return p;
-          const existing = p.images ?? [];
-          const imgs = [...existing, { id: crypto.randomUUID(), productId, imageUrl: url, isPrimary: existing.length === 0 }];
-          return { ...p, images: imgs };
+          return { ...p, images: [...(p.images ?? []), newImg] };
         }));
+
+        if (loadedImages !== undefined) {
+          this.productImages.update(m => ({ ...m, [productId]: [...m[productId], newImg] }));
+        }
+
         this.uploadingId.set(null);
       },
       error: () => this.uploadingId.set(null),
